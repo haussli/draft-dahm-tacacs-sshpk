@@ -114,10 +114,10 @@ Dahm, et al.             Expires 4 December 2026                [Page 2]
 Internet-Draft           TACACS+ SSH Public Keys               June 2026
 
 
-   is to shift the burden of administration of SSH Public Keys from the
+   is to shift the burden of distribution of SSH Public Keys from the
    Network Devices to the central TACACS+ Server.  Note that this model
    does NOT extend the SSH authentication flow out from the SSH Server
-   (The TACACS+ Client), to the TACACS+ Server.  The authentication
+   (the TACACS+ Client), to the TACACS+ Server.  The authentication
    remains completely in the SSH Server (The TACACS+ Client).  It is
    important to keep this in mind, as the phase of the AAA protocol that
    is used to download the public Keys is actually the TACACS+
