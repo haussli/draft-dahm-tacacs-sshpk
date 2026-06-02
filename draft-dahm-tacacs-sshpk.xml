@@ -1,0 +1,373 @@
+Operations and Management Area Working Group                     T. Dahm
+Internet-Draft                                                          
+Updates: 8907 (if approved)                                   J. Heasley
+Intended status: Standards Track                                     NTT
+Expires: 8 October 2026                                 D.C. Medway Gash
+                                                     Cisco Systems, Inc.
+                                                                  A. Ota
+                                                             Google Inc.
+                                                            6 April 2026
+
+
+  SSH Public Key Distribution for Device Administration using Terminal
+         Access Controller Access-Control System Plus (TACACS+)
+                          draft-tacacs-ssh-00
+
+Abstract
+
+   SSH [RFC4251] provides robust and reliable mechanism to connect to
+   Network Devices for administration.  Conventionally, the Public Keys
+   required to authenticate SSH sessions are provisioned directly on the
+   Network Devices.  This document adds an extension into Terminal
+   Access Controller Access-Control System Plus (TACACS+) to replace the
+   need for the direct provisioning of SSH public keys onto the Network
+   Devices.
+
+Requirements Language
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+   "OPTIONAL" in this document are to be interpreted as described in BCP
+   14 [RFC2119] [RFC8174] when, and only when, they appear in all
+   capitals, as shown here.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+
+
+
+Dahm, et al.             Expires 8 October 2026                 [Page 1]
+
+Internet-Draft  SSH Public Key Distribution for Device A      April 2026
+
+
+   This Internet-Draft will expire on 8 October 2026.
+
+Copyright Notice
+
+   Copyright (c) 2026 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.  Code Components
+   extracted from this document must include Revised BSD License text as
+   described in Section 4.e of the Trust Legal Provisions and are
+   provided without warranty as described in the Revised BSD License.
+
+Table of Contents
+
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
+   2.  Technical Definitions . . . . . . . . . . . . . . . . . . . .   3
+     2.1.  SSHST+  . . . . . . . . . . . . . . . . . . . . . . . . .   3
+   3.  SSH Public Key Distribution . . . . . . . . . . . . . . . . .   3
+     3.1.  Authentication START Packet . . . . . . . . . . . . . . .   3
+     3.2.  Authentication REPLY Packet . . . . . . . . . . . . . . .   3
+     3.3.  SSH Key download process  . . . . . . . . . . . . . . . .   3
+   4.  Security Considerations . . . . . . . . . . . . . . . . . . .   4
+   5.  Operational Considerations  . . . . . . . . . . . . . . . . .   4
+   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   5
+   7.  Normative References  . . . . . . . . . . . . . . . . . . . .   5
+   8.  Normative References  . . . . . . . . . . . . . . . . . . . .   5
+   Appendix A.  Appendix 1 [REPLACE/DELETE]  . . . . . . . . . . . .   5
+   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .   5
+   Contributors  . . . . . . . . . . . . . . . . . . . . . . . . . .   5
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   5
+
+1.  Introduction
+
+   SSH provides robust and reliable mechanism to connect to Network
+   Devices for administration.  The widespread approach to provisioning
+   the Public Keys required to authenticate SSH sessions is to upload
+   them through some administration interface onto the Network Devices
+   which are acting as SSH Server.  Once SSH connection has been
+   established, the Device Administration session is then often mediated
+   (authorized and audited) through protocols such as Terminal Access
+   Controller Access-Control System Plus (TACACS+) Protocol via one or
+   more centralised Servers.
+
+
+
+
+
+Dahm, et al.             Expires 8 October 2026                 [Page 2]
+
+Internet-Draft  SSH Public Key Distribution for Device A      April 2026
+
+
+   This document describes an enhancement of the secured version of the
+   TACACS+ protocol [RFC9887] to facilitate the download the 
+   applicable Public Keys from a central TACACS+ server so that the
+   TACACS+ Client can use it to complete SSH authentication.
+   The intent is to shift the burden of administration of SSH Public
+   Keys from the Network Devices to the central TACACS+ Server.
+   Note that this model does NOT extend the SSH authentication flow
+   out from the SSH Server (The TACACS+ Client), to the TACACS+ 
+   Server.  The authentication remains completely in the SSH
+   Server (The TACACS+ Client).  It is important to keep this in mind,
+   as the phase of the AAA protocol that is used to download the public
+   Keys is actually the TACACS+ Authentication phase.
+
+   Specifically, this document adds a new authentication action option
+   into TACACS+ Authnentication flow, the reply to which, allows the
+   TACACS+ Server to send the relevant SSH Public Keys to the device.
+
+2.  Technical Definitions
+
+   The terms defined in Section 2 of [RFC9887] are fully applicable here
+   and will not be repeated.  The following terms are also used in this document.
+
+2.1.  SSHST+
+
+   An SSHST+ (SSH Server/TACACS+ Client).  This is the device that is
+   running the SSH Server and is configured as a TACACS+ Client.
+
+3.  SSH Public Key Distribution
+
+   The following mechanism describes the process. This enhancement of TACACS+
+   Protocol is only applicable to the TLS TACACS+ protocol.
+
+3.1.  Authentication START Packet
+
+   A new enumerated value is added for use within the action field of the 
+   Authentication START Packet:
+
+   TAC_PLUS_AUTHEN_SEND_PUBLIC_KEYS := 0x05
+
+3.2.  Authentication REPLY Packet
+
+   A New enumerated value is added for use within the status section go the 
+   Authentication REPLY Packet:
+
+   TAC_PLUS_AUTHEN_STATUS_MORE := 0x22
+
+3.2.  SSH Key download process
+
+   As a result of SSH connection attempt, an SSHST+ requires the public
+   key for a user.
+
+
+
+
+
+Dahm, et al.             Expires 8 October 2026                 [Page 3]
+
+Internet-Draft  SSH Public Key Distribution for Device A      April 2026
+
+
+   If no key is available, then it MAY initiate a TACACS+
+   Authentication flow to retrieve the key from the TACACS+ Server.
+
+   SSHST+ sends an Authentication Start packet with the action field set
+   to TAC_PLUS_AUTHEN_SEND_PUBLIC_KEYS defined in Section 3.1:
+
+   1.  user = username
+
+   2.  action = TAC_PLUS_AUTHEN_SEND_PUBLIC_KEYS
+
+   3.  priv_lvl = 0
+
+   4.  authen_type = TAC_PLUS_AUTHEN_TYPE_ASCII
+
+   5.  service = TAC_PLUS_AUTHEN_SVC_LOGIN
+
+   The user field of the Authentication Start packet contains the
+   username for which the public keys are required
+
+   The TACACS+ Server processes the start packet, extracting the
+   username, and determines if it can provide the public key which is applicable
+   for the username.
+
+   If public keys are not available, the server responds with
+   status=TAC_PLUS_AUTHEN_STATUS_FAIL.
+
+   If public keys are available, the server responds with
+   status=TAC_PLUS_AUTHEN_STATUS_PASS if there is only one applicable key or
+   TAC_PLUS_AUTHEN_STATUS_MORE if there are more than one keys. The Public Keys are encoded
+   into the data field as described in Section 3.3
+
+   1.  status = TAC_PLUS_AUTHEN_STATUS_PASS
+
+   2.  server_msg = EMPTY
+
+   3.  data (section 3.3)
+
+
+   SSHST+ receives the Authentication Reply packet and extracts the
+   public key from the data field.
+
+   SSHST+ uses the public key to authenticate the user. If the authentication fails, but eh 
+
+   If there is a failure, but the status is TAC_PLUS_AUTHEN_STATUS_MORE, then the SSHST+ can
+   Send Authentication CONTINUE Packet with the data field set to the last SSH Key that was 
+   Returned. The cycle can continue until the authentication passes or the Server runs out of keys. 
+   When the TACACS+ Server sends the last key (or first key if there is only one), 
+   it MUST respond with TAC_PLUS_AUTHEN_STATUS_PASS.
+
+   Authorisation and Accounting proceed as they would if the SSH key had been 
+   provisioned by the administrator directly onto the SSHST+.
+
+3.3 Encoding of SSH Public Key in Authentication Reply Packet
+
+   The Public Key is encoded in the data field of the Authentication Reply 
+   Packet as follows:
+
+   1. The encoding as Text String and must conform to Section 3.7 of [rfc8907]
+
+   2. The content is limited to 32716 characters. Any larger, the key MUST be treated
+      as unavailable as described in section 3.2
+
+   3. The syntax of the encoding MUST conform to [rfc4716] (OK, do we want thsi 
+      Or the more common implementation in the field, that ignored this RFC)?
+
+
+
+4.  Security Considerations
+
+   This exertion MUST only be implemented in Secured TACACS+, as defined in [RFC9887]
+
+5.  Operational Considerations
+
+   TBD
+
+
+
+
+
+
+Dahm, et al.             Expires 8 October 2026                 [Page 4]
+
+Internet-Draft  SSH Public Key Distribution for Device A      April 2026
+
+
+6.  IANA Considerations
+
+   TBD
+
+7.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/info/rfc2119>.
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/info/rfc8174>.
+
+   [RFC8907]  Dahm, T., Ota, A., Medway Gash, D.C., Carrel, D., and L.
+              Grant, "The Terminal Access Controller Access-Control
+              System Plus (TACACS+) Protocol", RFC 8907,
+              DOI 10.17487/RFC8907, September 2020,
+              <https://www.rfc-editor.org/info/rfc8907>.
+
+   [RFC9887]   
+
+   [RFC4716]
+
+    
+
+8.  Normative References
+
+   [RFC4251]  Ylonen, T. and C. Lonvick, Ed., "The Secure Shell (SSH)
+              Protocol Architecture", RFC 4251, DOI 10.17487/RFC4251,
+              January 2006, <https://www.rfc-editor.org/info/rfc4251>.
+
+    
+
+Appendix A.  Appendix 1 [REPLACE/DELETE]
+
+   This becomes an Appendix [REPLACE]
+
+Acknowledgements
+
+   This template uses extracts from templates written by Pekka Savola,
+   Elwyn Davies and Henrik Levkowetz.  [REPLACE]
+
+Contributors
+
+   Thanks to all of the contributors.  [REPLACE]
+
+Authors' Addresses
+
+   Thorsten Dahm
+   Email: thorsten.dahm@gmail.com
+
+
+   John Heasley
+   NTT
+
+
+
+Dahm, et al.             Expires 8 October 2026                 [Page 5]
+
+Internet-Draft  SSH Public Key Distribution for Device A      April 2026
+
+
+   Email: heas@shrubbery.net
+
+
+   Douglas C. Medway Gash
+   Cisco Systems, Inc.
+   170 West Tasman Dr.
+   San Jose, CA 95134
+   United States of America
+   Email: dcmgash@cisco.com
+
+
+   Andrej Ota
+   Google Inc.
+   1600 Amphitheatre Parkway
+   Mountain View, CA 94043
+   United States of America
+   Email: andrej@ota.si
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Dahm, et al.             Expires 8 October 2026                 [Page 6]
