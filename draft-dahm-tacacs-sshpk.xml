@@ -95,7 +95,7 @@ Table of Contents
    Devices for administration.  The widespread approach to provisioning
    the Public Keys required to authenticate SSH sessions is to upload
    them through some administration interface onto the Network Devices
-   which are acting as SSH Server.  Once SSH connection has been
+   which are acting as SSH Server.  Once an SSH connection has been
    established, the Device Administration session is then often mediated
    (authorized and audited) through protocols such as Terminal Access
    Controller Access-Control System Plus (TACACS+) Protocol via one or
@@ -111,7 +111,7 @@ Internet-Draft  SSH Public Key Distribution for Device A      April 2026
 
 
    This document describes an enhancement of the secured version of the
-   TACACS+ protocol [RFC9887] to facilitate the download the 
+   TACACS+ protocol [RFC9887] to facilitate the download of the 
    applicable Public Keys from a central TACACS+ server so that the
    TACACS+ Client can use it to complete SSH authentication.
    The intent is to shift the burden of administration of SSH Public
@@ -123,7 +123,7 @@ Internet-Draft  SSH Public Key Distribution for Device A      April 2026
    as the phase of the AAA protocol that is used to download the public
    Keys is actually the TACACS+ Authentication phase.
 
-   Specifically, this document adds a new authentication action option
+   Specifically, this document adds a new authentication action value
    into TACACS+ Authnentication flow, the reply to which, allows the
    TACACS+ Server to send the relevant SSH Public Keys to the device.
 
@@ -151,7 +151,7 @@ Internet-Draft  SSH Public Key Distribution for Device A      April 2026
 
 3.2.  Authentication REPLY Packet
 
-   A New enumerated value is added for use within the status section go the 
+   A New enumerated value is added for use within the status section of the 
    Authentication REPLY Packet:
 
    TAC_PLUS_AUTHEN_STATUS_MORE := 0x22
@@ -180,26 +180,27 @@ Internet-Draft  SSH Public Key Distribution for Device A      April 2026
 
    2.  action = TAC_PLUS_AUTHEN_SEND_PUBLIC_KEYS
 
-   3.  priv_lvl = 0
+   3.  priv_lvl = 0 XXX This field might not be 0; right?
 
    4.  authen_type = TAC_PLUS_AUTHEN_TYPE_ASCII
 
    5.  service = TAC_PLUS_AUTHEN_SVC_LOGIN
 
    The user field of the Authentication Start packet contains the
-   username for which the public keys are required
+   username for which the public keys are required.
 
    The TACACS+ Server processes the start packet, extracting the
-   username, and determines if it can provide the public key which is applicable
-   for the username.
+   username, and determines if it can provide the public keys which are
+   applicable for the username. The source of public keys is not defined by
+   this document.
 
    If public keys are not available, the server responds with
    status=TAC_PLUS_AUTHEN_STATUS_FAIL.
 
    If public keys are available, the server responds with
    status=TAC_PLUS_AUTHEN_STATUS_PASS if there is only one applicable key or
-   TAC_PLUS_AUTHEN_STATUS_MORE if there are more than one keys. The Public Keys are encoded
-   into the data field as described in Section 3.3
+   TAC_PLUS_AUTHEN_STATUS_MORE if there are more than one key. The Public Keys are encoded
+   into the data field as described in Section 3.3.
 
    1.  status = TAC_PLUS_AUTHEN_STATUS_PASS
 
@@ -207,17 +208,20 @@ Internet-Draft  SSH Public Key Distribution for Device A      April 2026
 
    3.  data (section 3.3)
 
+   XXX We had a proposal for this; "PASS" seems weird.
 
    SSHST+ receives the Authentication Reply packet and extracts the
    public key from the data field.
 
-   SSHST+ uses the public key to authenticate the user. If the authentication fails, but eh 
-
-   If there is a failure, but the status is TAC_PLUS_AUTHEN_STATUS_MORE, then the SSHST+ can
+   SSHST+ uses the public key to authenticate the user.  If there is a failure,
+   but the status is TAC_PLUS_AUTHEN_STATUS_MORE, then the SSHST+ can
    Send Authentication CONTINUE Packet with the data field set to the last SSH Key that was 
    Returned. The cycle can continue until the authentication passes or the Server runs out of keys. 
    When the TACACS+ Server sends the last key (or first key if there is only one), 
    it MUST respond with TAC_PLUS_AUTHEN_STATUS_PASS.
+
+   XXX Comment/guidance about caching keys should be added.  Can a client
+   cache?  for how long?  Does a tacacs flag control this?
 
    Authorisation and Accounting proceed as they would if the SSH key had been 
    provisioned by the administrator directly onto the SSHST+.
@@ -235,11 +239,16 @@ Internet-Draft  SSH Public Key Distribution for Device A      April 2026
    3. The syntax of the encoding MUST conform to [rfc4716] (OK, do we want thsi 
       Or the more common implementation in the field, that ignored this RFC)?
 
-
+    XXX This requires much more thought.  maybe both should be supported?
 
 4.  Security Considerations
 
    This exertion MUST only be implemented in Secured TACACS+, as defined in [RFC9887]
+
+   XXX why?  do we care?  Is there something about the protocol change that
+   requires TLS or that is more exposed than the password mechanism?  By
+   this, I mean suggest holding the gun at the correct end, but your
+   prerogative.
 
 5.  Operational Considerations
 
