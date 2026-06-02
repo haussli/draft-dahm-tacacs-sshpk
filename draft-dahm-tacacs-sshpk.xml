@@ -202,6 +202,7 @@
         <t>
         XXX Comment/guidance about caching keys should be added.
         Can a client cache? for how long? Does a tacacs flag control this?
+        To start with, I’d compare it to: how long can public keys administered on the device last? Whites probably forever.
         </t>
         <t>
         Authorisation and Accounting proceed as they would if the SSH key had been provisioned by the administrator directly onto the SSHST+.
@@ -220,7 +221,7 @@
           <li><t>The syntax of the encoding MUST conform to <xref target="RFC4716"/> (XXX OK, do we want this or the more common implementation in the field, that ignored this RFC)?</t></li>
         </ol>
         <t>
-        XXX This requires much more thought.  maybe both should be supported?
+        XXX This requires much more thought.  maybe both should be supported?  But, what would we point to, IIRC, there is no actual documentation for the openSSH text format, just what goes on the wire.
         </t>
       </section>
     </section>

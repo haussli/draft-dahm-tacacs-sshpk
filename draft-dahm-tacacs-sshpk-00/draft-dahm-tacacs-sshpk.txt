@@ -80,13 +80,13 @@ Table of Contents
      3.4.  Encoding of SSH Public Key in Authentication Reply
            Packet  . . . . . . . . . . . . . . . . . . . . . . . . .   5
    4.  Security Considerations . . . . . . . . . . . . . . . . . . .   5
-   5.  Operational Considerations  . . . . . . . . . . . . . . . . .   5
+   5.  Operational Considerations  . . . . . . . . . . . . . . . . .   6
    6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   6
    7.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   6
      7.1.  Normative References  . . . . . . . . . . . . . . . . . .   6
      7.2.  Informative References  . . . . . . . . . . . . . . . . .   6
    Appendix A.  Appendix 1 [REPLACE/DELETE]  . . . . . . . . . . . .   6
-   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .   6
+   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .   7
    Contributors  . . . . . . . . . . . . . . . . . . . . . . . . . .   7
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   7
 
@@ -238,7 +238,9 @@ Internet-Draft           TACACS+ SSH Public Keys               June 2026
    one), it MUST respond with TAC_PLUS_AUTHEN_STATUS_PASS.
 
    XXX Comment/guidance about caching keys should be added.  Can a
-   client cache? for how long?  Does a tacacs flag control this?
+   client cache? for how long?  Does a tacacs flag control this?  To
+   start with, I’d compare it to: how long can public keys administered
+   on the device last?  Whites probably forever.
 
    Authorisation and Accounting proceed as they would if the SSH key had
    been provisioned by the administrator directly onto the SSHST+.
@@ -259,6 +261,8 @@ Internet-Draft           TACACS+ SSH Public Keys               June 2026
        ignored this RFC)?
 
    XXX This requires much more thought.  maybe both should be supported?
+   But, what would we point to, IIRC, there is no actual documentation
+   for the openSSH text format, just what goes on the wire.
 
 4.  Security Considerations
 
@@ -270,10 +274,6 @@ Internet-Draft           TACACS+ SSH Public Keys               June 2026
    mechanism?  By this, I mean suggest holding the gun at the correct
    end, but your prerogative.
 
-5.  Operational Considerations
-
-   TBD
-
 
 
 
@@ -281,6 +281,10 @@ Dahm, et al.             Expires 4 December 2026                [Page 5]
 
 Internet-Draft           TACACS+ SSH Public Keys               June 2026
 
+
+5.  Operational Considerations
+
+   TBD
 
 6.  IANA Considerations
 
@@ -324,10 +328,6 @@ Appendix A.  Appendix 1 [REPLACE/DELETE]
 
    This becomes an Appendix [REPLACE]
 
-Acknowledgements
-
-   This template uses extracts from templates written by Pekka Savola,
-   Elwyn Davies and Henrik Levkowetz.  [REPLACE]
 
 
 
@@ -337,6 +337,11 @@ Dahm, et al.             Expires 4 December 2026                [Page 6]
 
 Internet-Draft           TACACS+ SSH Public Keys               June 2026
 
+
+Acknowledgements
+
+   This template uses extracts from templates written by Pekka Savola,
+   Elwyn Davies and Henrik Levkowetz.  [REPLACE]
 
 Contributors
 
@@ -363,11 +368,6 @@ Authors' Addresses
 
    Andrej Ota
    Email: andrej@ota.si
-
-
-
-
-
 
 
 

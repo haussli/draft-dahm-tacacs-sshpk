@@ -1534,7 +1534,8 @@ li > p:last-of-type:only-child {
         When the TACACS+ Server sends the last key (or first key if there is only one), it MUST respond with <code>TAC_PLUS_AUTHEN_STATUS_PASS</code>.<a href="#section-3.3-12" class="pilcrow">¶</a></p>
 <p id="section-3.3-13">
         XXX Comment/guidance about caching keys should be added.
-        Can a client cache? for how long? Does a tacacs flag control this?<a href="#section-3.3-13" class="pilcrow">¶</a></p>
+        Can a client cache? for how long? Does a tacacs flag control this?
+        To start with, I’d compare it to: how long can public keys administered on the device last? Whites probably forever.<a href="#section-3.3-13" class="pilcrow">¶</a></p>
 <p id="section-3.3-14">
         Authorisation and Accounting proceed as they would if the SSH key had been provisioned by the administrator directly onto the SSHST+.<a href="#section-3.3-14" class="pilcrow">¶</a></p>
 </section>
@@ -1559,7 +1560,7 @@ li > p:last-of-type:only-child {
 </li>
         </ol>
 <p id="section-3.4-3">
-        XXX This requires much more thought.  maybe both should be supported?<a href="#section-3.4-3" class="pilcrow">¶</a></p>
+        XXX This requires much more thought.  maybe both should be supported?  But, what would we point to, IIRC, there is no actual documentation for the openSSH text format, just what goes on the wire.<a href="#section-3.4-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
