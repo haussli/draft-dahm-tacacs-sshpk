@@ -10,7 +10,11 @@
 <meta content="Douglas C. Medway Gash" name="author">
 <meta content="Andrej Ota" name="author">
 <meta content="
-       SSH   provides robust and reliable mechanism to connect to Network Devices for administration. Conventionally, the Public Keys required to authenticate SSH sessions are provisioned directly on the Network Devices. This document adds an extension into Terminal Access Controller Access-Control System Plus (TACACS+) to replace the need for the direct provisioning of SSH public keys onto the Network Devices. 
+       
+        SSH   provides robust and reliable mechanism to connect to Network Devices for administration.
+        Conventionally, the Public Keys required to authenticate SSH sessions are provisioned directly on the Network Devices.
+        This document adds an extension into Terminal Access Controller Access-Control System Plus (TACACS+) to replace the need for the direct provisioning of SSH public keys onto the Network Devices.
+       
     " name="description">
 <meta content="xml2rfc 3.32.0" name="generator">
 <meta content="TACACS+" name="keyword">
@@ -1269,7 +1273,10 @@ li > p:last-of-type:only-child {
 <h1 id="title">SSH Public Key Distribution for Device Administration using Terminal Access Controller Access-Control System Plus (TACACS+)</h1>
 <section id="section-abstract">
       <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
-<p id="section-abstract-1">SSH <span>[<a href="#RFC4251" class="cite xref">RFC4251</a>]</span> provides robust and reliable mechanism to connect to Network Devices for administration. Conventionally, the Public Keys required to authenticate SSH sessions are provisioned directly on the Network Devices. This document adds an extension into Terminal Access Controller Access-Control System Plus (TACACS+) to replace the need for the direct provisioning of SSH public keys onto the Network Devices.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-1">
+        SSH <span>[<a href="#RFC4251" class="cite xref">RFC4251</a>]</span> provides robust and reliable mechanism to connect to Network Devices for administration.
+        Conventionally, the Public Keys required to authenticate SSH sessions are provisioned directly on the Network Devices.
+        This document adds an extension into Terminal Access Controller Access-Control System Plus (TACACS+) to replace the need for the direct provisioning of SSH public keys onto the Network Devices.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
 </section>
 <div id="status-of-memo">
 <section id="section-boilerplate.1">
@@ -1393,15 +1400,24 @@ li > p:last-of-type:only-child {
       <h2 id="name-introduction">
 <a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
       </h2>
-<p id="section-1-1">SSH provides robust and reliable mechanism to connect to Network Devices for administration. The widespread approach to provisioning the Public Keys required to authenticate SSH sessions is to upload them through some administration interface onto the Network Devices which are acting as SSH Server. Once an SSH connection has been established, the Device Administration session is then often mediated (authorized and audited) through protocols such as Terminal Access Controller Access-Control System Plus (TACACS+) Protocol via one or more centralised Servers.<a href="#section-1-1" class="pilcrow">¶</a></p>
-<p id="section-1-2">This document describes an enhancement of the secured version of the TACACS+ protocol <span>[<a href="#RFC9887" class="cite xref">RFC9887</a>]</span> to facilitate the download of the applicable Public Keys from a central TACACS+ server so that the TACACS+ Client can use it to complete SSH authentication. The intent is to shift the burden of distribution of SSH Public Keys from the Network Devices to the central TACACS+ Server. Note that this model does NOT extend the SSH authentication flow out from the SSH Server (the TACACS+ Client), to the TACACS+ Server. The authentication remains completely in the SSH Server (The TACACS+ Client). It is important to keep this in mind, as the phase of the AAA protocol that is used to download the public Keys is actually the TACACS+ Authentication phase.<a href="#section-1-2" class="pilcrow">¶</a></p>
-<p id="section-1-3">Specifically, this document adds a new authentication action value into TACACS+ Authnentication flow, the reply to which, allows the TACACS+ Server to send the relevant SSH Public Keys to the device.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-1">
+        SSH provides robust and reliable mechanism to connect to Network Devices for administration.
+        The widespread approach to provisioning the Public Keys required to authenticate SSH sessions is to upload them through some administration interface onto the Network Devices which are acting as SSH Server.
+        Once an SSH connection has been established, the Device Administration session is then often mediated (authorized and audited) through protocols such as Terminal Access Controller Access-Control System Plus (TACACS+) Protocol via one or more centralised Servers.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">
+        This document describes an enhancement of the secured version of the TACACS+ protocol <span>[<a href="#RFC9887" class="cite xref">RFC9887</a>]</span> to facilitate the download of the applicable Public Keys from a central TACACS+ server so that the TACACS+ Client can use it to complete SSH authentication. The intent is to shift the burden of distribution of SSH Public Keys from the Network Devices to the central TACACS+ Server.
+        Note that this model does NOT extend the SSH authentication flow out from the SSH Server (the TACACS+ Client), to the TACACS+ Server.
+        The authentication remains completely in the SSH Server (The TACACS+ Client).
+        It is important to keep this in mind, as the phase of the AAA protocol that is used to download the public Keys is actually the TACACS+ Authentication phase.<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">
+        Specifically, this document adds a new authentication action value into TACACS+ Authnentication flow, the reply to which, allows the TACACS+ Server to send the relevant SSH Public Keys to the device.<a href="#section-1-3" class="pilcrow">¶</a></p>
 <div id="requirements">
 <section id="section-1.1">
         <h3 id="name-requirements-language">
 <a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-requirements-language" class="section-name selfRef">Requirements Language</a>
         </h3>
-<p id="section-1.1-1">The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 <span>[<a href="#RFC2119" class="cite xref">RFC2119</a>]</span> <span>[<a href="#RFC8174" class="cite xref">RFC8174</a>]</span> when, and only when, they appear in all capitals, as shown here.<a href="#section-1.1-1" class="pilcrow">¶</a></p>
+<p id="section-1.1-1">
+        The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 <span>[<a href="#RFC2119" class="cite xref">RFC2119</a>]</span> <span>[<a href="#RFC8174" class="cite xref">RFC8174</a>]</span> when, and only when, they appear in all capitals, as shown here.<a href="#section-1.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1411,13 +1427,17 @@ li > p:last-of-type:only-child {
       <h2 id="name-technical-definitions">
 <a href="#section-2" class="section-number selfRef">2. </a><a href="#name-technical-definitions" class="section-name selfRef">Technical Definitions</a>
       </h2>
-<p id="section-2-1">The terms defined in Section 2 of <span>[<a href="#RFC9887" class="cite xref">RFC9887</a>]</span> are fully applicable here and will not be repeated. The following terms are also used in this document.<a href="#section-2-1" class="pilcrow">¶</a></p>
+<p id="section-2-1">
+        The terms defined in Section 2 of <span>[<a href="#RFC9887" class="cite xref">RFC9887</a>]</span> are fully applicable here and will not be repeated.
+        The following terms are also used in this document.<a href="#section-2-1" class="pilcrow">¶</a></p>
 <div id="sshst-plus">
 <section id="section-2.1">
         <h3 id="name-sshst">
 <a href="#section-2.1" class="section-number selfRef">2.1. </a><a href="#name-sshst" class="section-name selfRef">SSHST+</a>
         </h3>
-<p id="section-2.1-1">An SSHST+ (SSH Server/TACACS+ Client). This is the device that is running the SSH Server and is configured as a TACACS+ Client.<a href="#section-2.1-1" class="pilcrow">¶</a></p>
+<p id="section-2.1-1">
+        An SSHST+ (SSH Server/TACACS+ Client).
+        This is the device that is running the SSH Server and is configured as a TACACS+ Client.<a href="#section-2.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1427,13 +1447,16 @@ li > p:last-of-type:only-child {
       <h2 id="name-ssh-public-key-distribution">
 <a href="#section-3" class="section-number selfRef">3. </a><a href="#name-ssh-public-key-distribution" class="section-name selfRef">SSH Public Key Distribution</a>
       </h2>
-<p id="section-3-1">The following mechanism describes the process. This enhancement of TACACS+ Protocol is only applicable to the TLS TACACS+ protocol.<a href="#section-3-1" class="pilcrow">¶</a></p>
+<p id="section-3-1">
+        The following mechanism describes the process.
+        This enhancement of TACACS+ Protocol is only applicable to the TLS TACACS+ protocol.<a href="#section-3-1" class="pilcrow">¶</a></p>
 <div id="authentication-start-packet">
 <section id="section-3.1">
         <h3 id="name-authentication-start-packet">
 <a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-authentication-start-packet" class="section-name selfRef">Authentication START Packet</a>
         </h3>
-<p id="section-3.1-1">A new enumerated value is added for use within the action field of the Authentication START Packet:<a href="#section-3.1-1" class="pilcrow">¶</a></p>
+<p id="section-3.1-1">
+        A new enumerated value is added for use within the action field of the Authentication START Packet:<a href="#section-3.1-1" class="pilcrow">¶</a></p>
 <div class="sourcecode" id="section-3.1-2">
 <pre>TAC_PLUS_AUTHEN_SEND_PUBLIC_KEYS := 0x05</pre><a href="#section-3.1-2" class="pilcrow">¶</a>
 </div>
@@ -1444,7 +1467,8 @@ li > p:last-of-type:only-child {
         <h3 id="name-authentication-reply-packet">
 <a href="#section-3.2" class="section-number selfRef">3.2. </a><a href="#name-authentication-reply-packet" class="section-name selfRef">Authentication REPLY Packet</a>
         </h3>
-<p id="section-3.2-1">A New enumerated value is added for use within the status section of the Authentication REPLY Packet:<a href="#section-3.2-1" class="pilcrow">¶</a></p>
+<p id="section-3.2-1">
+        A New enumerated value is added for use within the status section of the Authentication REPLY Packet:<a href="#section-3.2-1" class="pilcrow">¶</a></p>
 <div class="sourcecode" id="section-3.2-2">
 <pre>TAC_PLUS_AUTHEN_STATUS_MORE := 0x22</pre><a href="#section-3.2-2" class="pilcrow">¶</a>
 </div>
@@ -1455,9 +1479,12 @@ li > p:last-of-type:only-child {
         <h3 id="name-ssh-key-download-process">
 <a href="#section-3.3" class="section-number selfRef">3.3. </a><a href="#name-ssh-key-download-process" class="section-name selfRef">SSH Key download process</a>
         </h3>
-<p id="section-3.3-1">As a result of SSH connection attempt, an SSHST+ requires the public key for a user.<a href="#section-3.3-1" class="pilcrow">¶</a></p>
-<p id="section-3.3-2">If no key is available, then it MAY initiate a TACACS+ Authentication flow to retrieve the key from the TACACS+ Server.<a href="#section-3.3-2" class="pilcrow">¶</a></p>
-<p id="section-3.3-3">SSHST+ sends an Authentication Start packet with the action field set to <code>TAC_PLUS_AUTHEN_SEND_PUBLIC_KEYS</code> defined in <a href="#authentication-start-packet" class="auto internal xref">Section 3.1</a>:<a href="#section-3.3-3" class="pilcrow">¶</a></p>
+<p id="section-3.3-1">
+        As a result of SSH connection attempt, an SSHST+ requires the public key for a user.<a href="#section-3.3-1" class="pilcrow">¶</a></p>
+<p id="section-3.3-2">
+        If no key is available, then it MAY initiate a TACACS+ Authentication flow to retrieve the key from the TACACS+ Server.<a href="#section-3.3-2" class="pilcrow">¶</a></p>
+<p id="section-3.3-3">
+        SSHST+ sends an Authentication Start packet with the action field set to <code>TAC_PLUS_AUTHEN_SEND_PUBLIC_KEYS</code> defined in <a href="#authentication-start-packet" class="auto internal xref">Section 3.1</a>:<a href="#section-3.3-3" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-3.3-4">
           <li id="section-3.3-4.1">
             <p id="section-3.3-4.1.1"><code>user</code> = username<a href="#section-3.3-4.1.1" class="pilcrow">¶</a></p>
@@ -1475,10 +1502,16 @@ li > p:last-of-type:only-child {
             <p id="section-3.3-4.5.1"><code>service</code> = <code>TAC_PLUS_AUTHEN_SVC_LOGIN</code><a href="#section-3.3-4.5.1" class="pilcrow">¶</a></p>
 </li>
         </ol>
-<p id="section-3.3-5">The user field of the Authentication Start packet contains the username for which the public keys are required.<a href="#section-3.3-5" class="pilcrow">¶</a></p>
-<p id="section-3.3-6">The TACACS+ Server processes the start packet, extracting the username, and determines if it can provide the public keys which are applicable for the username. The source of public keys is not defined by this document.<a href="#section-3.3-6" class="pilcrow">¶</a></p>
-<p id="section-3.3-7">If public keys are not available, the server responds with <code>status=TAC_PLUS_AUTHEN_STATUS_FAIL</code>.<a href="#section-3.3-7" class="pilcrow">¶</a></p>
-<p id="section-3.3-8">If public keys are available, the server responds with <code>status=TAC_PLUS_AUTHEN_STATUS_PASS</code> if there is only one applicable key or <code>status=TAC_PLUS_AUTHEN_STATUS_MORE</code> if there are more than one key. The Public Keys are encoded into the data field as described in <a href="#encoding-ssh-public-key" class="auto internal xref">Section 3.4</a>.<a href="#section-3.3-8" class="pilcrow">¶</a></p>
+<p id="section-3.3-5">
+        The user field of the Authentication Start packet contains the username for which the public keys are required.<a href="#section-3.3-5" class="pilcrow">¶</a></p>
+<p id="section-3.3-6">
+        The TACACS+ Server processes the start packet, extracting the username, and determines if it can provide the public keys which are applicable for the username.
+        The source of public keys is not defined by this document.<a href="#section-3.3-6" class="pilcrow">¶</a></p>
+<p id="section-3.3-7">
+        If public keys are not available, the server responds with <code>status=TAC_PLUS_AUTHEN_STATUS_FAIL</code>.<a href="#section-3.3-7" class="pilcrow">¶</a></p>
+<p id="section-3.3-8">
+        If public keys are available, the server responds with <code>status=TAC_PLUS_AUTHEN_STATUS_PASS</code> if there is only one applicable key or <code>status=TAC_PLUS_AUTHEN_STATUS_MORE</code> if there are more than one key.
+        The Public Keys are encoded into the data field as described in <a href="#encoding-ssh-public-key" class="auto internal xref">Section 3.4</a>.<a href="#section-3.3-8" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-3.3-9">
           <li id="section-3.3-9.1">
             <p id="section-3.3-9.1.1"><code>status</code> = <code>TAC_PLUS_AUTHEN_STATUS_PASS</code><a href="#section-3.3-9.1.1" class="pilcrow">¶</a></p>
@@ -1490,11 +1523,20 @@ li > p:last-of-type:only-child {
             <p id="section-3.3-9.3.1"><code>data</code> (see <a href="#encoding-ssh-public-key" class="auto internal xref">Section 3.4</a>)<a href="#section-3.3-9.3.1" class="pilcrow">¶</a></p>
 </li>
         </ol>
-<p id="section-3.3-10">XXX We had a proposal for this; "PASS" seems weird.<a href="#section-3.3-10" class="pilcrow">¶</a></p>
-<p id="section-3.3-11">SSHST+ receives the Authentication Reply packet and extracts the public key from the data field.<a href="#section-3.3-11" class="pilcrow">¶</a></p>
-<p id="section-3.3-12">SSHST+ uses the public key to authenticate the user. If there is a failure, but the status is <code>TAC_PLUS_AUTHEN_STATUS_MORE</code>, then the SSHST+ can send an Authentication CONTINUE Packet with the data field set to the last SSH Key that was returned. The cycle can continue until the authentication passes or the Server runs out of keys. When the TACACS+ Server sends the last key (or first key if there is only one), it MUST respond with <code>TAC_PLUS_AUTHEN_STATUS_PASS</code>.<a href="#section-3.3-12" class="pilcrow">¶</a></p>
-<p id="section-3.3-13">XXX Comment/guidance about caching keys should be added. Can a client cache? for how long? Does a tacacs flag control this?<a href="#section-3.3-13" class="pilcrow">¶</a></p>
-<p id="section-3.3-14">Authorisation and Accounting proceed as they would if the SSH key had been provisioned by the administrator directly onto the SSHST+.<a href="#section-3.3-14" class="pilcrow">¶</a></p>
+<p id="section-3.3-10">
+        XXX We had a proposal for this; "PASS" seems weird.<a href="#section-3.3-10" class="pilcrow">¶</a></p>
+<p id="section-3.3-11">
+        SSHST+ receives the Authentication Reply packet and extracts the public key from the data field.<a href="#section-3.3-11" class="pilcrow">¶</a></p>
+<p id="section-3.3-12">
+        SSHST+ uses the public key to authenticate the user.
+        If there is a failure, but the status is <code>TAC_PLUS_AUTHEN_STATUS_MORE</code>, then the SSHST+ can send an Authentication CONTINUE Packet with the data field set to the last SSH Key that was returned.
+        The cycle can continue until the authentication passes or the Server runs out of keys.
+        When the TACACS+ Server sends the last key (or first key if there is only one), it MUST respond with <code>TAC_PLUS_AUTHEN_STATUS_PASS</code>.<a href="#section-3.3-12" class="pilcrow">¶</a></p>
+<p id="section-3.3-13">
+        XXX Comment/guidance about caching keys should be added.
+        Can a client cache? for how long? Does a tacacs flag control this?<a href="#section-3.3-13" class="pilcrow">¶</a></p>
+<p id="section-3.3-14">
+        Authorisation and Accounting proceed as they would if the SSH key had been provisioned by the administrator directly onto the SSHST+.<a href="#section-3.3-14" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="encoding-ssh-public-key">
@@ -1502,19 +1544,22 @@ li > p:last-of-type:only-child {
         <h3 id="name-encoding-of-ssh-public-key-">
 <a href="#section-3.4" class="section-number selfRef">3.4. </a><a href="#name-encoding-of-ssh-public-key-" class="section-name selfRef">Encoding of SSH Public Key in Authentication Reply Packet</a>
         </h3>
-<p id="section-3.4-1">The Public Key is encoded in the data field of the Authentication Reply Packet as follows:<a href="#section-3.4-1" class="pilcrow">¶</a></p>
+<p id="section-3.4-1">
+          The Public Key is encoded in the data field of the Authentication Reply Packet as follows:<a href="#section-3.4-1" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-3.4-2">
           <li id="section-3.4-2.1">
             <p id="section-3.4-2.1.1">The encoding is as a Text String and must conform to Section 3.7 of <span>[<a href="#RFC8907" class="cite xref">RFC8907</a>]</span>.<a href="#section-3.4-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-3.4-2.2">
-            <p id="section-3.4-2.2.1">The content is limited to 32716 characters. Any larger, the key MUST be treated as unavailable as described in <a href="#ssh-key-download-process" class="auto internal xref">Section 3.3</a>.<a href="#section-3.4-2.2.1" class="pilcrow">¶</a></p>
+            <p id="section-3.4-2.2.1">The content is limited to 32716 characters.
+            Any larger, the key MUST be treated as unavailable as described in <a href="#ssh-key-download-process" class="auto internal xref">Section 3.3</a>.<a href="#section-3.4-2.2.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-3.4-2.3">
             <p id="section-3.4-2.3.1">The syntax of the encoding MUST conform to <span>[<a href="#RFC4716" class="cite xref">RFC4716</a>]</span> (XXX OK, do we want this or the more common implementation in the field, that ignored this RFC)?<a href="#section-3.4-2.3.1" class="pilcrow">¶</a></p>
 </li>
         </ol>
-<p id="section-3.4-3">XXX This requires much more thought. maybe both should be supported?<a href="#section-3.4-3" class="pilcrow">¶</a></p>
+<p id="section-3.4-3">
+        XXX This requires much more thought.  maybe both should be supported?<a href="#section-3.4-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1524,8 +1569,10 @@ li > p:last-of-type:only-child {
       <h2 id="name-security-considerations">
 <a href="#section-4" class="section-number selfRef">4. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
       </h2>
-<p id="section-4-1">This exertion MUST only be implemented in Secured TACACS+, as defined in <span>[<a href="#RFC9887" class="cite xref">RFC9887</a>]</span>.<a href="#section-4-1" class="pilcrow">¶</a></p>
-<p id="section-4-2">XXX why? do we care? Is there something about the protocol change that requires TLS or that is more exposed than the password mechanism? By this, I mean suggest holding the gun at the correct end, but your prerogative.<a href="#section-4-2" class="pilcrow">¶</a></p>
+<p id="section-4-1">
+        This exertion MUST only be implemented in Secured TACACS+, as defined in <span>[<a href="#RFC9887" class="cite xref">RFC9887</a>]</span>.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<p id="section-4-2">
+        XXX why? do we care? Is there something about the protocol change that requires TLS or that is more exposed than the password mechanism? By this, I mean suggest holding the gun at the correct end, but your prerogative.<a href="#section-4-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="operational-considerations">

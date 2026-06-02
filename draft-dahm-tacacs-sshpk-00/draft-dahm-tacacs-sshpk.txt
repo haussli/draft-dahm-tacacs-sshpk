@@ -258,7 +258,7 @@ Internet-Draft           TACACS+ SSH Public Keys               June 2026
        we want this or the more common implementation in the field, that
        ignored this RFC)?
 
-   XXX This requires much more thought. maybe both should be supported?
+   XXX This requires much more thought.  maybe both should be supported?
 
 4.  Security Considerations
 
