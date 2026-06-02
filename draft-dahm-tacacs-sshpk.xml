@@ -11,11 +11,14 @@
 <rfc
   xmlns:xi="http://www.w3.org/2001/XInclude"
   category="std"
+  consensus="true"
   docName="draft-dahm-tacacs-sshpk-00"
   ipr="trust200902"
   obsoletes=""
-  updates="8907"
+  updates="RFC8907"
   submissionType="IETF"
+  sortRefs="true"
+  indexInclude="false"
   xml:lang="en"
   version="3">
 
@@ -53,22 +56,21 @@
     </author>
 
     <author fullname="Andrej Ota" initials="A." surname="Ota">
-      <organization>Google Inc.</organization>
       <address>
         <postal>
-          <street>1600 Amphitheatre Parkway</street>
-          <city>Mountain View</city>
-          <region>CA</region>
-          <code>94043</code>
-          <country>United States of America</country>
+          <street></street>
+          <city></city>
+          <region></region>
+          <code></code>
+          <country></country>
         </postal>
         <email>andrej@ota.si</email>
       </address>
     </author>
 
-    <date year="2026" month="4" day="6"/>
+    <date year="2026" month="6" day="2"/>
 
-    <area>Operations and Management</area>
+    <area>Operations and Management (ops)</area>
     <workgroup>Operations and Management Area Working Group</workgroup>
 
     <keyword>TACACS+</keyword>
@@ -140,10 +142,10 @@
           <li><t><tt>server_msg</tt> = EMPTY</t></li>
           <li><t><tt>data</tt> (see <xref target="encoding-ssh-public-key"/>)</t></li>
         </ol>
-        <cref>XXX We had a proposal for this; "PASS" seems weird.</cref>
+        <t>XXX We had a proposal for this; "PASS" seems weird.</t>
         <t>SSHST+ receives the Authentication Reply packet and extracts the public key from the data field.</t>
         <t>SSHST+ uses the public key to authenticate the user. If there is a failure, but the status is <tt>TAC_PLUS_AUTHEN_STATUS_MORE</tt>, then the SSHST+ can send an Authentication CONTINUE Packet with the data field set to the last SSH Key that was returned. The cycle can continue until the authentication passes or the Server runs out of keys. When the TACACS+ Server sends the last key (or first key if there is only one), it MUST respond with <tt>TAC_PLUS_AUTHEN_STATUS_PASS</tt>.</t>
-        <cref>XXX Comment/guidance about caching keys should be added. Can a client cache? for how long? Does a tacacs flag control this?</cref>
+        <t>XXX Comment/guidance about caching keys should be added. Can a client cache? for how long? Does a tacacs flag control this?</t>
         <t>Authorisation and Accounting proceed as they would if the SSH key had been provisioned by the administrator directly onto the SSHST+.</t>
       </section>
 
@@ -153,16 +155,16 @@
         <ol type="1">
           <li><t>The encoding is as a Text String and must conform to Section 3.7 of <xref target="RFC8907"/>.</t></li>
           <li><t>The content is limited to 32716 characters. Any larger, the key MUST be treated as unavailable as described in <xref target="ssh-key-download-process"/>.</t></li>
-          <li><t>The syntax of the encoding MUST conform to <xref target="RFC4716"/> <cref>(OK, do we want this or the more common implementation in the field, that ignored this RFC)?</cref></t></li>
+          <li><t>The syntax of the encoding MUST conform to <xref target="RFC4716"/> (XXX OK, do we want this or the more common implementation in the field, that ignored this RFC)?</t></li>
         </ol>
-        <cref>XXX This requires much more thought. maybe both should be supported?</cref>
+        <t>XXX This requires much more thought. maybe both should be supported?</t>
       </section>
     </section>
 
     <section anchor="security-considerations">
       <name>Security Considerations</name>
       <t>This exertion MUST only be implemented in Secured TACACS+, as defined in <xref target="RFC9887"/>.</t>
-      <cref>XXX why? do we care? Is there something about the protocol change that requires TLS or that is more exposed than the password mechanism? By this, I mean suggest holding the gun at the correct end, but your prerogative.</cref>
+      <t>XXX why? do we care? Is there something about the protocol change that requires TLS or that is more exposed than the password mechanism? By this, I mean suggest holding the gun at the correct end, but your prerogative.</t>
     </section>
 
     <section anchor="operational-considerations">
