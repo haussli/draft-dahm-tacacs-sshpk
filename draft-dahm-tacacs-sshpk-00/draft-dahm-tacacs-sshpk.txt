@@ -1,11 +1,15 @@
+
+
+
+
 Operations and Management Area Working Group                     T. Dahm
-Internet-Draft
+Internet-Draft                                                          
 Updates: RFC8907 (if approved)                                J. Heasley
 Intended status: Standards Track                                     NTT
-Expires: 20 January 2027                               D. C. Medway Gash
+Expires: 1 February 2027                               D. C. Medway Gash
                                                      Cisco Systems, Inc.
                                                                   A. Ota
-                                                            19 July 2026
+                                                            31 July 2026
 
 
   SSH Public Key Distribution for Device Administration using Terminal
@@ -37,7 +41,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 20 January 2027.
+   This Internet-Draft will expire on 1 February 2027.
 
 Copyright Notice
 
@@ -49,7 +53,7 @@ Copyright Notice
 
 
 
-Dahm, et al.             Expires 20 January 2027                [Page 1]
+Dahm, et al.             Expires 1 February 2027                [Page 1]
 
 Internet-Draft           TACACS+ SSH Public Keys               July 2026
 
@@ -80,7 +84,7 @@ Table of Contents
    6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   6
    7.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   6
      7.1.  Normative References  . . . . . . . . . . . . . . . . . .   6
-     7.2.  Informative References  . . . . . . . . . . . . . . . . .   7
+     7.2.  Informative References  . . . . . . . . . . . . . . . . .   6
    Appendix A.  Appendix 1 [REPLACE/DELETE]  . . . . . . . . . . . .   7
    Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .   7
    Contributors  . . . . . . . . . . . . . . . . . . . . . . . . . .   7
@@ -105,7 +109,7 @@ Table of Contents
 
 
 
-Dahm, et al.             Expires 20 January 2027                [Page 2]
+Dahm, et al.             Expires 1 February 2027                [Page 2]
 
 Internet-Draft           TACACS+ SSH Public Keys               July 2026
 
@@ -161,7 +165,7 @@ Internet-Draft           TACACS+ SSH Public Keys               July 2026
 
 
 
-Dahm, et al.             Expires 20 January 2027                [Page 3]
+Dahm, et al.             Expires 1 February 2027                [Page 3]
 
 Internet-Draft           TACACS+ SSH Public Keys               July 2026
 
@@ -198,9 +202,11 @@ Internet-Draft           TACACS+ SSH Public Keys               July 2026
    status=TAC_PLUS_AUTHEN_STATUS_FAIL.
 
    The TACACS+ server assembles the applicable public keys and encodes
-   them into one or more data fields as defined in Section 3.4 The
-   status of the response depends on whether additional data fields are
-   required to transmit the remaining keys.
+   them into one or more data fields as defined in Section 3.4.  The
+   status of the response depends on whether the remaining keys can be
+   fit into the data field of the reply packet that the server is
+   preparing, or if additional packets will be required to transmit the
+   remaining keys in their data fields.
 
    If additional keys remain after this packet, the server MUST respond
    with:
@@ -212,30 +218,21 @@ Internet-Draft           TACACS+ SSH Public Keys               July 2026
    If this is the final block of keys and at least one key was
    identified, the server MUST respond with:
 
-   *  status = TAC_PLUS_AUTHEN_STATUS_PASS
 
 
 
-
-Dahm, et al.             Expires 20 January 2027                [Page 4]
+Dahm, et al.             Expires 1 February 2027                [Page 4]
 
 Internet-Draft           TACACS+ SSH Public Keys               July 2026
 
+
+   *  status = TAC_PLUS_AUTHEN_STATUS_PASS
 
    *  data = the final block of keys.
 
    The SSHServer/TACACS+Client receives the Authentication Reply packet
    and extracts the public keys from the data field.  It then attempts
    to authenticate the user using these keys in that order.
-
-   SSHServer/TACACS+Client uses the public key to authenticate the user.
-   If there is a failure, but the status is TAC_PLUS_AUTHEN_STATUS_MORE,
-   then the SSHServer/TACACS+Client can send an Authentication CONTINUE
-   Packet with the data field set to the last SSH Key that was returned.
-   The cycle can continue until the authentication passes or the Server
-   runs out of keys.  When the TACACS+ Server sends the last key (or
-   first key if there is only one), it MUST respond with
-   TAC_PLUS_AUTHEN_STATUS_PASS.
 
    If authentication is not successful and the status is
    TAC_PLUS_AUTHEN_STATUS_MORE, the SSHServer/TACACS+Client MAY send an
@@ -269,15 +266,6 @@ Internet-Draft           TACACS+ SSH Public Keys               July 2026
    format or decimal 0 byte if Open SSH format is used.  Base-64
    encoding will never include these byte values.
 
-
-
-
-
-Dahm, et al.             Expires 20 January 2027                [Page 5]
-
-Internet-Draft           TACACS+ SSH Public Keys               July 2026
-
-
    Segmentation: The total payload is subject to the 64K size limitation
    of the TACACS+ data field.  Keys MUST be encapsulated such that only
    complete key encoding strings (and separators) are contained within a
@@ -285,6 +273,14 @@ Internet-Draft           TACACS+ SSH Public Keys               July 2026
    the remaining space of the current data field, the implementation
    MUST assign a new packet and utilize its data field to continue the
    sequence.
+
+
+
+
+Dahm, et al.             Expires 1 February 2027                [Page 5]
+
+Internet-Draft           TACACS+ SSH Public Keys               July 2026
+
 
    The resulting payload consists of one or more data fields, one per
    reply, each containing one or more ASCII Text keys delimited by byte
@@ -322,18 +318,6 @@ Internet-Draft           TACACS+ SSH Public Keys               July 2026
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
               May 2017, <https://www.rfc-editor.org/info/rfc8174>.
 
-
-
-
-
-
-
-
-Dahm, et al.             Expires 20 January 2027                [Page 6]
-
-Internet-Draft           TACACS+ SSH Public Keys               July 2026
-
-
    [RFC8907]  Dahm, T., Ota, A., Medway Gash, D.C., Carrel, D., and L.
               Grant, "The Terminal Access Controller Access-Control
               System Plus (TACACS+) Protocol", RFC 8907,
@@ -346,6 +330,13 @@ Internet-Draft           TACACS+ SSH Public Keys               July 2026
               December 2025, <https://www.rfc-editor.org/info/rfc9887>.
 
 7.2.  Informative References
+
+
+
+Dahm, et al.             Expires 1 February 2027                [Page 6]
+
+Internet-Draft           TACACS+ SSH Public Keys               July 2026
+
 
    [RFC4251]  Ylonen, T. and C. Lonvick, Ed., "The Secure Shell (SSH)
               Protocol Architecture", RFC 4251, DOI 10.17487/RFC4251,
@@ -383,13 +374,6 @@ Authors' Addresses
    Email: dcmgash@cisco.com
 
 
-
-
-Dahm, et al.             Expires 20 January 2027                [Page 7]
-
-Internet-Draft           TACACS+ SSH Public Keys               July 2026
-
-
    Andrej Ota
    Email: andrej@ota.si
 
@@ -405,40 +389,4 @@ Internet-Draft           TACACS+ SSH Public Keys               July 2026
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Dahm, et al.             Expires 20 January 2027                [Page 8]
+Dahm, et al.             Expires 1 February 2027                [Page 7]

@@ -200,9 +200,10 @@
         </t>
         <t>
         The TACACS+ server assembles the applicable public keys and encodes
-   them into one or more data fields as defined in <xref target="encoding-ssh-public-key"/>  The
-   status of the response depends on whether additional data fields are
-   required to transmit the remaining keys.
+   them into one or more data fields as defined in <xref target="encoding-ssh-public-key"/>.  The
+   status of the response depends on whether the remaining keys can be fit into the data field of
+            the reply packet that the server is preparing, or if additional packets will be
+   required to transmit the remaining keys in their data fields.
         </t>
         <t>
         If additional keys remain after this packet, the server MUST respond with:
@@ -223,12 +224,6 @@
         The SSHServer/TACACS+Client receives the Authentication Reply packet
    and extracts the public keys from the data field. It then attempts to authenticate the user using
    these keys in that order.
-        </t>
-        <t>
-        SSHServer/TACACS+Client uses the public key to authenticate the user.
-        If there is a failure, but the status is <tt>TAC_PLUS_AUTHEN_STATUS_MORE</tt>, then the SSHServer/TACACS+Client can send an Authentication CONTINUE Packet with the data field set to the last SSH Key that was returned.
-        The cycle can continue until the authentication passes or the Server runs out of keys.
-        When the TACACS+ Server sends the last key (or first key if there is only one), it MUST respond with <tt>TAC_PLUS_AUTHEN_STATUS_PASS</tt>.
         </t>
         <t>
         If authentication is not successful and the status is
