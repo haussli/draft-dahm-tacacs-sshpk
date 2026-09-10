@@ -68,7 +68,7 @@
       </address>
     </author>
 
-    <date year="2026" month="6" day="2"/>
+    <date/>
 
     <area>Operations and Management (ops)</area>
     <workgroup>Operations and Management Area Working Group</workgroup>
@@ -79,9 +79,13 @@
 
     <abstract>
       <t>
-        SSH <xref target="RFC4251"/> provides robust and reliable mechanism to connect to Network Devices for administration.
-        Conventionally, the Public Keys required to authenticate SSH sessions are provisioned directly on the Network Devices.
-        This document adds an extension into Terminal Access Controller Access-Control System Plus (TACACS+) to replace the need for the direct provisioning of SSH public keys onto the Network Devices.
+        SSH <xref target="RFC4251"/> provides a robust and reliable mechanism to connect to
+   network devices for administration.  Conventionally, the public keys
+   required to authenticate SSH sessions are provisioned directly on the
+   network devices.  This document adds an extension to Terminal
+   Access Controller Access-Control System Plus (TACACS+) to eliminate the
+   need for the direct provisioning of SSH public keys onto the Network
+   Devices.
         </t>
     </abstract>
   </front>
@@ -90,18 +94,33 @@
     <section anchor="introduction">
       <name>Introduction</name>
       <t>
-        SSH provides robust and reliable mechanism to connect to Network Devices for administration.
-        The widespread approach to provisioning the Public Keys required to authenticate SSH sessions is to upload them through some administration interface onto the Network Devices which are acting as SSH Server.
-        Once an SSH connection has been established, the Device Administration session is then often mediated (authorized and audited) through protocols such as Terminal Access Controller Access-Control System Plus (TACACS+) Protocol via one or more centralised Servers.
+ SSH provides a robust and reliable mechanism to connect to Network
+   Devices for administration.  The common approach to provisioning
+   the public keys required to authenticate SSH sessions is to upload
+   them via some administration interface onto the network devices
+   which are acting as SSH server.  Once an SSH connection has been
+   established, the Device Administration session is then often mediated
+   (authorized and audited) through protocols such as Terminal Access
+   Controller Access-Control System Plus (TACACS+) Protocol via one or
+   more centralised servers.
       </t>
       <t>
-        This document describes an enhancement of the secured version of the TACACS+ protocol <xref target="RFC9887"/> to facilitate the download of the applicable Public Keys from a central TACACS+ server so that the TACACS+ Client can use it to complete SSH authentication. The intent is to shift the burden of distribution of SSH Public Keys from the Network Devices to the central TACACS+ Server.
-        Note that this model does NOT extend the SSH authentication flow out from the SSH Server (the TACACS+ Client), to the TACACS+ Server.
-        The authentication remains completely in the SSH Server (The TACACS+ Client).
-        It is important to keep this in mind, as the phase of the AAA protocol that is used to download the public Keys is actually the TACACS+ Authentication phase.
+        This document describes an enhancement of the secured version of the TACACS+ protocol <xref target="RFC9887"/> to facilitate the download of the
+   applicable public keys from a central TACACS+ server so that the
+   TACACS+ Client can use it to complete SSH authentication.  The intent
+   is to shift the burden of distribution of SSH public keys from the
+   network devices to the central TACACS+ server.  Note that this model
+   does NOT extend the SSH authentication flow out from the SSH server
+   (the TACACS+ Client), to the TACACS+ server:  The authentication
+   remains completely in the SSH server (The TACACS+ Client).  It is
+   important to keep this in mind, as the phase of the AAA protocol that
+   is used to download the public keys is actually the TACACS+
+   Authentication phase.
       </t>
       <t>
-        Specifically, this document adds a new authentication action value into TACACS+ Authnentication flow, the reply to which, allows the TACACS+ Server to send the relevant SSH Public Keys to the device.
+       Specifically, this document adds a new authentication action value
+   into TACACS+ authentication flow which allows the
+   TACACS+ server to send the relevant SSH public keys to the device.
       </t>
 
       <section anchor="requirements">
@@ -118,12 +137,12 @@
         The terms defined in Section 2 of <xref target="RFC9887"/> are fully applicable here and will not be repeated.
         The following terms are also used in this document.
       </t>
-      
+
       <section anchor="sshst-plus">
-        <name>SSHST+</name>
+        <name>SSHServer/TACACS+Client</name>
         <t>
-        An SSHST+ (SSH Server/TACACS+ Client).
-        This is the device that is running the SSH Server and is configured as a TACACS+ Client.
+        This is the device that is running the SSH server and is configured
+   as a TACACS+ Client.
         </t>
       </section>
     </section>
@@ -141,6 +160,10 @@
         A new enumerated value is added for use within the action field of the Authentication START Packet:
         </t>
         <sourcecode><![CDATA[TAC_PLUS_AUTHEN_SEND_PUBLIC_KEYS := 0x05]]></sourcecode>
+          <t>
+        A new enumerated value is added for use within the authen_type field of the Authentication START Packet:
+        </t>
+        <sourcecode><![CDATA[TAC_PLUS_AUTHEN_TYPE_SSH := 0x07]]></sourcecode>
       </section>
 
       <section anchor="authentication-reply-packet">
@@ -154,58 +177,73 @@
       <section anchor="ssh-key-download-process">
         <name>SSH Key download process</name>
         <t>
-        As a result of SSH connection attempt, an SSHST+ requires the public key for a user.
+        During the SSH_MSG_USERAUTH_REQUEST phase of SSH authentication, the SSH
+   server retrieves the set of public keys related to the user. These keys
+   are used to determine if the public keys sent by the client in turn can
+   be used to perform the actual login. This section describes the TACACS+
+   protocol process that the SSHServer/TACACS+Client uses to request the
+   public keys associated with the user from the TACACS+ server.
         </t>
         <t>
-        If no key is available, then it MAY initiate a TACACS+ Authentication flow to retrieve the key from the TACACS+ Server.
+        The SSHServer/TACACS+Client MUST send an Authentication Start packet to
+   the TACACS+ server with the following fields:
         </t>
-        <t>
-        SSHST+ sends an Authentication Start packet with the action field set to <tt>TAC_PLUS_AUTHEN_SEND_PUBLIC_KEYS</tt> defined in <xref target="authentication-start-packet"/>:
-        </t>
-        <ol type="1">
-          <li><t><tt>user</tt> = username</t></li>
+        <ul>
+          <li><t><tt>user</tt> = <tt>The username for which public keys are requested.</tt></t></li>
           <li><t><tt>action</tt> = <tt>TAC_PLUS_AUTHEN_SEND_PUBLIC_KEYS</tt></t></li>
-          <li><t><tt>priv_lvl</tt> = 0 <cref>XXX This field might not be 0; right?</cref></t></li>
-          <li><t><tt>authen_type</tt> = <tt>TAC_PLUS_AUTHEN_TYPE_ASCII</tt></t></li>
+          <li><t><tt>authen_type</tt> = <tt>TAC_PLUS_AUTHEN_TYPE_SSH</tt></t></li>
           <li><t><tt>service</tt> = <tt>TAC_PLUS_AUTHEN_SVC_LOGIN</tt></t></li>
-        </ol>
+        </ul>
         <t>
-        The user field of the Authentication Start packet contains the username for which the public keys are required.
-        </t>
-        <t>
-        The TACACS+ Server processes the start packet, extracting the username, and determines if it can provide the public keys which are applicable for the username.
-        The source of public keys is not defined by this document.
+        Upon receipt of the Authentication Start packet, the TACACS+ server
+   extracts the username and determines the set of applicable public keys.
+   The mechanism for key storage and retrieval is outside the scope of this document.
         </t>
         <t>
         If public keys are not available, the server responds with <tt>status=TAC_PLUS_AUTHEN_STATUS_FAIL</tt>.
         </t>
         <t>
-        If public keys are available, the server responds with <tt>status=TAC_PLUS_AUTHEN_STATUS_PASS</tt> if there is only one applicable key or <tt>status=TAC_PLUS_AUTHEN_STATUS_MORE</tt> if there are more than one key.
-        The Public Keys are encoded into the data field as described in <xref target="encoding-ssh-public-key"/>.
+        The TACACS+ server assembles the applicable public keys and encodes
+   them into one or more data fields as defined in <xref target="encoding-ssh-public-key"/>.  The
+   status of the response depends on whether the remaining keys can be fit into the data field of
+            the reply packet that the server is preparing, or if additional packets will be
+   required to transmit the remaining keys in their data fields.
         </t>
-        <ol type="1">
+        <t>
+        If additional keys remain after this packet, the server MUST respond with:
+        </t>
+        <ul>
+          <li><t><tt>status</tt> = <tt>TAC_PLUS_AUTHEN_STATUS_MORE</tt></t></li>
+          <li><t><tt>data</tt> = <tt>the next block of keys.</tt></t></li>
+        </ul>
+        <t>
+        If this is the final block of keys and at least one key was
+   identified, the server MUST respond with:
+        </t>
+         <ul>
           <li><t><tt>status</tt> = <tt>TAC_PLUS_AUTHEN_STATUS_PASS</tt></t></li>
-          <li><t><tt>server_msg</tt> = EMPTY</t></li>
-          <li><t><tt>data</tt> (see <xref target="encoding-ssh-public-key"/>)</t></li>
-        </ol>
+          <li><t><tt>data</tt> = <tt>the final block of keys.</tt></t></li>
+        </ul>
         <t>
-        XXX We had a proposal for this; "PASS" seems weird.</t>
-        <t>
-        SSHST+ receives the Authentication Reply packet and extracts the public key from the data field.
+        The SSHServer/TACACS+Client receives the Authentication Reply packet
+   and extracts the public keys from the data field. It then compares
+            the public key presented by the SSH client with the public keys returned by the TACACS+ server.
+            If a matching key is found, the SSH server continues the SSH public-key authentication
+            procedure and verifies proof of possession of the corresponding private key.
         </t>
         <t>
-        SSHST+ uses the public key to authenticate the user.
-        If there is a failure, but the status is <tt>TAC_PLUS_AUTHEN_STATUS_MORE</tt>, then the SSHST+ can send an Authentication CONTINUE Packet with the data field set to the last SSH Key that was returned.
-        The cycle can continue until the authentication passes or the Server runs out of keys.
-        When the TACACS+ Server sends the last key (or first key if there is only one), it MUST respond with <tt>TAC_PLUS_AUTHEN_STATUS_PASS</tt>.
+        If authentication is not successful and the status is
+   TAC_PLUS_AUTHEN_STATUS_MORE, the SSHServer/TACACS+Client MAY send an
+   Authentication CONTINUE packet with an empty data field to request
+   the next block of keys.  This cycle continues until authentication
+   succeeds or the server indicates no further keys are available.  When
+   the TACACS+ server sends the final key(s), it MUST respond with
+   status = TAC_PLUS_AUTHEN_STATUS_PASS.
         </t>
         <t>
-        XXX Comment/guidance about caching keys should be added.
-        Can a client cache? for how long? Does a tacacs flag control this?
-        To start with, I’d compare it to: how long can public keys administered on the device last? Whites probably forever.
-        </t>
-        <t>
-        Authorisation and Accounting proceed as they would if the SSH key had been provisioned by the administrator directly onto the SSHST+.
+  Following successful authentication, subsequent authorization and
+   accounting procedures proceed as if the SSH key had been provisioned
+   locally by an administrator.
         </t>
       </section>
 
@@ -214,31 +252,45 @@
         <t>
           The Public Key is encoded in the data field of the Authentication Reply Packet as follows:
         </t>
-        <ol type="1">
-          <li><t>The encoding is as a Text String and must conform to Section 3.7 of <xref target="RFC8907"/>.</t></li>
-          <li><t>The content is limited to 32716 characters.
-            Any larger, the key MUST be treated as unavailable as described in <xref target="ssh-key-download-process"/>.</t></li>
-          <li><t>The syntax of the encoding MUST conform to <xref target="RFC4716"/> (XXX OK, do we want this or the more common implementation in the field, that ignored this RFC)?</t></li>
-        </ol>
+          <t>
+              Key Text: Two options of public keys are supported: the SSH public key format
+   defined in <xref target="RFC4716"/> and the OpenSSH public key format.
+          </t>
+<t>
+   Encoding Format: Each key string MUST be encoded as base-64 ASCII text.
+   The total length of the base64-encoding plus one delimiter byte MUST be less than the maximum size of the TACACS+ data field (64K).
+   If the encoding exceeds this limit, it MUST be treated as if the key were not present.</t>
         <t>
-        XXX This requires much more thought.  maybe both should be supported?  But, what would we point to, IIRC, there is no actual documentation for the openSSH text format, just what goes on the wire.
+        Delimitation:  A delimiter is placed into the data field after each base-64 encoded key (even if there is only one present in a data field).
+      The delimiter is decimal 1 byte if the key is in <xref target="RFC4716"/> format or  decimal 0 byte if Open SSH format is used. Base-64 encoding will never include these byte values.
         </t>
+          <t>
+             Segmentation: The total payload is subject to the 64K size limitation
+   of the TACACS+ data field.  Keys MUST be encapsulated such that only
+   complete key encoding strings (and separators) are
+   contained within a single data field.  If a key encoding cannot be
+   accommodated within the remaining space of the current data field,
+   the implementation MUST assign a new packet and utilize its data
+   field to continue the sequence.
+          </t>
+          <t>
+         The resulting payload consists of one or more data fields, one per reply, each
+   containing one or more ASCII Text keys delimited by byte (0 or 1).
+          </t>
       </section>
     </section>
 
     <section anchor="security-considerations">
       <name>Security Considerations</name>
       <t>
-        This exertion MUST only be implemented in Secured TACACS+, as defined in <xref target="RFC9887"/>.
-      </t>
-      <t>
-        XXX why? do we care? Is there something about the protocol change that requires TLS or that is more exposed than the password mechanism? By this, I mean suggest holding the gun at the correct end, but your prerogative.
+        Configuration for this feature on the SSHServer/TACACS+Client MUST include a
+   setting for the maximum lifetime of stored public keys, which MUST default to 5 minutes.
       </t>
     </section>
 
     <section anchor="operational-considerations">
       <name>Operational Considerations</name>
-      <t>TBD</t>
+      <t>Public SSH Keys downloaded using this mechanism MUST NOT be stored permanently.</t>
     </section>
 
     <section anchor="iana-considerations">
