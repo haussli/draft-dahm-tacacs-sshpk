@@ -12,7 +12,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
   category="std"
   consensus="true"
-  docName="draft-dahm-tacacs-sshpk-01"
+  docName="draft-dahm-opsawg-tacacs-sshpk-01"
   ipr="trust200902"
   obsoletes=""
   updates="RFC8907"
@@ -20,12 +20,10 @@
   sortRefs="true"
   indexInclude="false"
   xml:lang="en"
-  version="3">
+  version="1">
 
   <front>
     <title abbrev="TACACS+ SSH Public Keys">SSH Public Key Distribution for Device Administration using Terminal Access Controller Access-Control System Plus (TACACS+)</title>
-
-    <seriesInfo name="Internet-Draft" value="draft-dahm-tacacs-sshpk-00"/>
 
     <author fullname="Thorsten Dahm" initials="T." surname="Dahm">
       <organization/>
@@ -122,7 +120,9 @@
    into TACACS+ authentication flow which allows the
    TACACS+ server to send the relevant SSH public keys to the device.
       </t>
-
+      <t>
+       This document is strictly limited to the distribution of SSH public keys. It has no opinion and does not preclude the distribution of other related materials in future extensions of <xref target="RFC9887"/>
+      </t>
       <section anchor="requirements">
         <name>Requirements Language</name>
         <t>
@@ -150,9 +150,31 @@
     <section anchor="ssh-public-key-distribution">
       <name>SSH Public Key Distribution</name>
       <t>
-        The following mechanism describes the process.
-        This enhancement of TACACS+ Protocol is only applicable to the TLS TACACS+ protocol.
+        During the SSH_MSG_USERAUTH_REQUEST phase of SSH authentication, the SSH
+   server retrieves the set of public keys related to the user. These keys
+   are used to determine if the public keys sent by the client in turn can
+   be used to perform the actual login.
       </t>
+
+        <t>
+            A common practice is to provision the public keys directly on the SSHServer/TACACS+Client.
+            This document describes a mechanism to retrieve the public keys from a TACACS+ server.
+            The SSHServer/TACACS+Client MUST allow the operator to configure a policy to determine
+            whether the public keys are retrieved from the TACACS+ server or from a local store.
+            When the public keys are retrieved from TACACS+, but the TACACS+ server is unreachable
+            (see <xref target="RFC8907" section="4.4"/>) the SSHServer/TACACS+Client MUST provide a fallback mechanism
+            to query the local store for public keys. If the TACACS+ server is reachable, but returns no public keys for the user, the SSHServer/TACACS+Client
+            MUST reject the authentication irrespective of whether the local store has public keys for the user.
+        </t>
+
+        <section anchor="tacacs-header-minor-version">
+          <name>TACACS+ Header Minor Version</name>
+          <t>
+            All packets defined in this document MUST have the version field (defined in <xref target="RFC8907" section="4.1"/>) set to:
+          </t>
+        <sourcecode><![CDATA[TAC_PLUS_MINOR_VER_TWO := 0x02]]></sourcecode>
+            <t>The TACACS+ Protocol Flow described in this document has no impact on the behaviors described in <xref target="RFC8907" section="5.4.1"/></t>
+        </section>
 
       <section anchor="authentication-start-packet">
         <name>Authentication START Packet</name>
@@ -177,10 +199,7 @@
       <section anchor="ssh-key-download-process">
         <name>SSH Key download process</name>
         <t>
-        During the SSH_MSG_USERAUTH_REQUEST phase of SSH authentication, the SSH
-   server retrieves the set of public keys related to the user. These keys
-   are used to determine if the public keys sent by the client in turn can
-   be used to perform the actual login. This section describes the TACACS+
+         This section describes the TACACS+
    protocol process that the SSHServer/TACACS+Client uses to request the
    public keys associated with the user from the TACACS+ server.
         </t>
@@ -280,18 +299,63 @@
       </section>
     </section>
 
-    <section anchor="security-considerations">
-      <name>Security Considerations</name>
-      <t>
-        Configuration for this feature on the SSHServer/TACACS+Client MUST include a
-   setting for the maximum lifetime of stored public keys, which MUST default to 5 minutes.
-      </t>
-    </section>
+      <section anchor="security-considerations">
+          <name>Security Considerations</name>
+          <t>
+              The Flows in this document are only supported in minor-version 3. TACACS+ servers MUST reject packets with
+              this version if they do not support this feature.
+          </t>
+          <t>
+              Fallback Mechanism: The SSH server MUST allow configuration of a policy to determine whether to retrieve
+              keys from the TACACS+ server or a local store. If the TACACS+ server is unreachable, a fallback to local
+              keys is necessary to maintain access. However, if the TACACS+ server is reachable but returns no keys,
+              authentication MUST be rejected regardless of local keys to prevent unauthorized access.
+          </t>
+          <t>
+              Strict Authentication Policy Enforcement: If the TACACS+ server explicitly denies the request,
+              authentication MUST fail immediately without fallback to local keys, ensuring centralized policy
+              enforcement.
+          </t>
+          <t>
+              Audit and Logging: TACACS+ Peers MUST support AUDIT of these operations, and TACACS+ Clients MUST support
+              accounting to log authentication attempts and commands for auditing and compliance.
+          </t>
+          <t>
+              Configuration for this feature on the SSHServer/TACACS+Client MUST include a
+              setting for the maximum lifetime of stored public keys, which MUST default to 5 minutes.
+          </t>
+      </section>
 
-    <section anchor="operational-considerations">
-      <name>Operational Considerations</name>
-      <t>Public SSH Keys downloaded using this mechanism MUST NOT be stored permanently.</t>
-    </section>
+      <section anchor="operational-considerations">
+          <name>Operational Considerations</name>
+          <t>
+              Policy Configuration: Operators MUST configure policies on the SSH server (TACACS+ client) to determine
+              whether public keys are retrieved from the TACACS+ server or from a local store. This includes setting
+              fallback behavior if the TACACS+ server is unreachable.
+          </t>
+          <t>
+              Platform and Server Compatibility: Operators MUST verify that the TACACS+ server supports SSH public key
+              attributes and that the platform and software versions are compatible with this feature.
+          </t>
+          <t>
+              Verification of Server Reachability and Key Availability: Operators SHOULD ensure that the device can
+              reach an operational TACACS+ server and that user accounts on the TACACS+ server include SSH public key
+              attributes in supported formats.
+          </t>
+          <t>
+              AAA Method List Setup: Operators SHOULD configure the AAA method list to use TACACS+ as the primary
+              authentication method for SSH, with optional local fallback. This controls whether local keys are used
+              when TACACS+ is unavailable.
+          </t>
+          <t>
+              Secure Communication: TACACS+ protocol exchanges are encrypted to ensure confidentiality. It is
+              RECOMMENDED to use TACACS+ over TLS 1.3 to protect against downgrade attacks and provide modern
+              cryptographic security.
+          </t>
+
+
+          <t>Public SSH Keys downloaded using this mechanism MUST NOT be stored permanently.</t>
+      </section>
 
     <section anchor="iana-considerations">
       <name>IANA Considerations</name>
@@ -316,14 +380,11 @@
       </references>
     </references>
 
-    <section anchor="appendix-1" numbered="true">
-      <name>Appendix 1 [REPLACE/DELETE]</name>
-      <t>This becomes an Appendix [REPLACE]</t>
-    </section>
-
     <section anchor="acknowledgements" numbered="false">
       <name>Acknowledgements</name>
-      <t>This template uses extracts from templates written by Pekka Savola, Elwyn Davies and Henrik Levkowetz. [REPLACE]</t>
+      <t>The author(s) would like to thank Nils Warnke, Arnaud Elbard, Micheal Richardson, Marc Huber and... for their support, insightful
+                reviews, suggestions and comments, all of whose contributions improved the document considerably..
+      </t>
     </section>
 
     <section anchor="contributors" numbered="false">

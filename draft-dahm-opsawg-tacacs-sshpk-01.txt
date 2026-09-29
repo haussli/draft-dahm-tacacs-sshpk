@@ -1,0 +1,504 @@
+
+
+
+
+Operations and Management Area Working Group                     T. Dahm
+Internet-Draft                                                          
+Updates: RFC8907 (if approved)                                J. Heasley
+Intended status: Standards Track                                     NTT
+Expires: 2 April 2027                                  D. C. Medway Gash
+                                                     Cisco Systems, Inc.
+                                                                  A. Ota
+                                                       29 September 2026
+
+
+  SSH Public Key Distribution for Device Administration using Terminal
+         Access Controller Access-Control System Plus (TACACS+)
+                   draft-dahm-opsawg-tacacs-sshpk-01
+
+Abstract
+
+   SSH [RFC4251] provides a robust and reliable mechanism to connect to
+   network devices for administration.  Conventionally, the public keys
+   required to authenticate SSH sessions are provisioned directly on the
+   network devices.  This document adds an extension to Terminal Access
+   Controller Access-Control System Plus (TACACS+) to eliminate the need
+   for the direct provisioning of SSH public keys onto the Network
+   Devices.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on 2 April 2027.
+
+Copyright Notice
+
+   Copyright (c) 2026 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+
+
+
+
+
+Dahm, et al.              Expires 2 April 2027                  [Page 1]
+
+Internet-Draft           TACACS+ SSH Public Keys          September 2026
+
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.  Code Components
+   extracted from this document must include Revised BSD License text as
+   described in Section 4.e of the Trust Legal Provisions and are
+   provided without warranty as described in the Revised BSD License.
+
+Table of Contents
+
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
+     1.1.  Requirements Language . . . . . . . . . . . . . . . . . .   3
+   2.  Technical Definitions . . . . . . . . . . . . . . . . . . . .   3
+     2.1.  SSHServer/TACACS+Client . . . . . . . . . . . . . . . . .   3
+   3.  SSH Public Key Distribution . . . . . . . . . . . . . . . . .   3
+     3.1.  TACACS+ Header Minor Version  . . . . . . . . . . . . . .   4
+     3.2.  Authentication START Packet . . . . . . . . . . . . . . .   4
+     3.3.  Authentication REPLY Packet . . . . . . . . . . . . . . .   4
+     3.4.  SSH Key download process  . . . . . . . . . . . . . . . .   4
+     3.5.  Encoding of SSH Public Key in Authentication Reply
+           Packet  . . . . . . . . . . . . . . . . . . . . . . . . .   6
+   4.  Security Considerations . . . . . . . . . . . . . . . . . . .   7
+   5.  Operational Considerations  . . . . . . . . . . . . . . . . .   7
+   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   8
+   7.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   8
+     7.1.  Normative References  . . . . . . . . . . . . . . . . . .   8
+     7.2.  Informative References  . . . . . . . . . . . . . . . . .   8
+   Appendix A.  Appendix 1 [REPLACE/DELETE]  . . . . . . . . . . . .   9
+   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .   9
+   Contributors  . . . . . . . . . . . . . . . . . . . . . . . . . .   9
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   9
+
+1.  Introduction
+
+   SSH provides a robust and reliable mechanism to connect to Network
+   Devices for administration.  The common approach to provisioning the
+   public keys required to authenticate SSH sessions is to upload them
+   via some administration interface onto the network devices which are
+   acting as SSH server.  Once an SSH connection has been established,
+   the Device Administration session is then often mediated (authorized
+   and audited) through protocols such as Terminal Access Controller
+   Access-Control System Plus (TACACS+) Protocol via one or more
+   centralised servers.
+
+   This document describes an enhancement of the secured version of the
+   TACACS+ protocol [RFC9887] to facilitate the download of the
+   applicable public keys from a central TACACS+ server so that the
+
+
+
+Dahm, et al.              Expires 2 April 2027                  [Page 2]
+
+Internet-Draft           TACACS+ SSH Public Keys          September 2026
+
+
+   TACACS+ Client can use it to complete SSH authentication.  The intent
+   is to shift the burden of distribution of SSH public keys from the
+   network devices to the central TACACS+ server.  Note that this model
+   does NOT extend the SSH authentication flow out from the SSH server
+   (the TACACS+ Client), to the TACACS+ server: The authentication
+   remains completely in the SSH server (The TACACS+ Client).  It is
+   important to keep this in mind, as the phase of the AAA protocol that
+   is used to download the public keys is actually the TACACS+
+   Authentication phase.
+
+   Specifically, this document adds a new authentication action value
+   into TACACS+ authentication flow which allows the TACACS+ server to
+   send the relevant SSH public keys to the device.
+
+   This document is strictly limited to the distribution of SSH public
+   keys.  It has no opinion and does not preclude the distribution of
+   other related materials in future extensions of [RFC9887]
+
+1.1.  Requirements Language
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+   "OPTIONAL" in this document are to be interpreted as described in BCP
+   14 [RFC2119] [RFC8174] when, and only when, they appear in all
+   capitals, as shown here.
+
+2.  Technical Definitions
+
+   The terms defined in Section 2 of [RFC9887] are fully applicable here
+   and will not be repeated.  The following terms are also used in this
+   document.
+
+2.1.  SSHServer/TACACS+Client
+
+   This is the device that is running the SSH server and is configured
+   as a TACACS+ Client.
+
+3.  SSH Public Key Distribution
+
+   During the SSH_MSG_USERAUTH_REQUEST phase of SSH authentication, the
+   SSH server retrieves the set of public keys related to the user.
+   These keys are used to determine if the public keys sent by the
+   client in turn can be used to perform the actual login.
+
+   A common practice is to provision the public keys directly on the
+   SSHServer/TACACS+Client.  This document describes a mechanism to
+   retrieve the public keys from a TACACS+ server.  The SSHServer/
+   TACACS+Client MUST allow the operator to configure a policy to
+
+
+
+Dahm, et al.              Expires 2 April 2027                  [Page 3]
+
+Internet-Draft           TACACS+ SSH Public Keys          September 2026
+
+
+   determine whether the public keys are retrieved from the TACACS+
+   server or from a local store.  When the public keys are retrieved
+   from TACACS+, but the TACACS+ server is unreachable (see Section 4.4
+   of [RFC8907]) the SSHServer/TACACS+Client MUST provide a fallback
+   mechanism to query the local store for public keys.  If the TACACS+
+   server is reachable, but returns no public keys for the user, the
+   SSHServer/TACACS+Client MUST reject the authentication irrespective
+   of whether the local store has public keys for the user.
+
+3.1.  TACACS+ Header Minor Version
+
+   All packets defined in this document MUST have the version field
+   (defined in Section 4.1 of [RFC8907]) set to:
+
+   TAC_PLUS_MINOR_VER_TWO := 0x02
+
+   The TACACS+ Protocol Flow described in this document has no impact on
+   the behaviors described in Section 5.4.1 of [RFC8907]
+
+3.2.  Authentication START Packet
+
+   A new enumerated value is added for use within the action field of
+   the Authentication START Packet:
+
+   TAC_PLUS_AUTHEN_SEND_PUBLIC_KEYS := 0x05
+
+   A new enumerated value is added for use within the authen_type field
+   of the Authentication START Packet:
+
+   TAC_PLUS_AUTHEN_TYPE_SSH := 0x07
+
+3.3.  Authentication REPLY Packet
+
+   A New enumerated value is added for use within the status section of
+   the Authentication REPLY Packet:
+
+   TAC_PLUS_AUTHEN_STATUS_MORE := 0x22
+
+3.4.  SSH Key download process
+
+   This section describes the TACACS+ protocol process that the
+   SSHServer/TACACS+Client uses to request the public keys associated
+   with the user from the TACACS+ server.
+
+   The SSHServer/TACACS+Client MUST send an Authentication Start packet
+   to the TACACS+ server with the following fields:
+
+   *  user = The username for which public keys are requested.
+
+
+
+Dahm, et al.              Expires 2 April 2027                  [Page 4]
+
+Internet-Draft           TACACS+ SSH Public Keys          September 2026
+
+
+   *  action = TAC_PLUS_AUTHEN_SEND_PUBLIC_KEYS
+
+   *  authen_type = TAC_PLUS_AUTHEN_TYPE_SSH
+
+   *  service = TAC_PLUS_AUTHEN_SVC_LOGIN
+
+   Upon receipt of the Authentication Start packet, the TACACS+ server
+   extracts the username and determines the set of applicable public
+   keys.  The mechanism for key storage and retrieval is outside the
+   scope of this document.
+
+   If public keys are not available, the server responds with
+   status=TAC_PLUS_AUTHEN_STATUS_FAIL.
+
+   The TACACS+ server assembles the applicable public keys and encodes
+   them into one or more data fields as defined in Section 3.5.  The
+   status of the response depends on whether the remaining keys can be
+   fit into the data field of the reply packet that the server is
+   preparing, or if additional packets will be required to transmit the
+   remaining keys in their data fields.
+
+   If additional keys remain after this packet, the server MUST respond
+   with:
+
+   *  status = TAC_PLUS_AUTHEN_STATUS_MORE
+
+   *  data = the next block of keys.
+
+   If this is the final block of keys and at least one key was
+   identified, the server MUST respond with:
+
+   *  status = TAC_PLUS_AUTHEN_STATUS_PASS
+
+   *  data = the final block of keys.
+
+   The SSHServer/TACACS+Client receives the Authentication Reply packet
+   and extracts the public keys from the data field.  It then compares
+   the public key presented by the SSH client with the public keys
+   returned by the TACACS+ server.  If a matching key is found, the SSH
+   server continues the SSH public-key authentication procedure and
+   verifies proof of possession of the corresponding private key.
+
+
+
+
+
+
+
+
+
+
+Dahm, et al.              Expires 2 April 2027                  [Page 5]
+
+Internet-Draft           TACACS+ SSH Public Keys          September 2026
+
+
+   If authentication is not successful and the status is
+   TAC_PLUS_AUTHEN_STATUS_MORE, the SSHServer/TACACS+Client MAY send an
+   Authentication CONTINUE packet with an empty data field to request
+   the next block of keys.  This cycle continues until authentication
+   succeeds or the server indicates no further keys are available.  When
+   the TACACS+ server sends the final key(s), it MUST respond with
+   status = TAC_PLUS_AUTHEN_STATUS_PASS.
+
+   Following successful authentication, subsequent authorization and
+   accounting procedures proceed as if the SSH key had been provisioned
+   locally by an administrator.
+
+3.5.  Encoding of SSH Public Key in Authentication Reply Packet
+
+   The Public Key is encoded in the data field of the Authentication
+   Reply Packet as follows:
+
+   Key Text: Two options of public keys are supported: the SSH public
+   key format defined in [RFC4716] and the OpenSSH public key format.
+
+   Encoding Format: Each key string MUST be encoded as base-64 ASCII
+   text.  The total length of the base64-encoding plus one delimiter
+   byte MUST be less than the maximum size of the TACACS+ data field
+   (64K).  If the encoding exceeds this limit, it MUST be treated as if
+   the key were not present.
+
+   Delimitation: A delimiter is placed into the data field after each
+   base-64 encoded key (even if there is only one present in a data
+   field).  The delimiter is decimal 1 byte if the key is in [RFC4716]
+   format or decimal 0 byte if Open SSH format is used.  Base-64
+   encoding will never include these byte values.
+
+   Segmentation: The total payload is subject to the 64K size limitation
+   of the TACACS+ data field.  Keys MUST be encapsulated such that only
+   complete key encoding strings (and separators) are contained within a
+   single data field.  If a key encoding cannot be accommodated within
+   the remaining space of the current data field, the implementation
+   MUST assign a new packet and utilize its data field to continue the
+   sequence.
+
+   The resulting payload consists of one or more data fields, one per
+   reply, each containing one or more ASCII Text keys delimited by byte
+   (0 or 1).
+
+
+
+
+
+
+
+
+Dahm, et al.              Expires 2 April 2027                  [Page 6]
+
+Internet-Draft           TACACS+ SSH Public Keys          September 2026
+
+
+4.  Security Considerations
+
+   The Flows in this document are only supported in minor-version 3.
+   TACACS+ servers MUST reject packets with this version if they do not
+   support this feature.
+
+   Fallback Mechanism: The SSH server MUST allow configuration of a
+   policy to determine whether to retrieve keys from the TACACS+ server
+   or a local store.  If the TACACS+ server is unreachable, a fallback
+   to local keys is necessary to maintain access.  However, if the
+   TACACS+ server is reachable but returns no keys, authentication MUST
+   be rejected regardless of local keys to prevent unauthorized access.
+
+   Strict Authentication Policy Enforcement: If the TACACS+ server
+   explicitly denies the request, authentication MUST fail immediately
+   without fallback to local keys, ensuring centralized policy
+   enforcement.
+
+   Audit and Logging: TACACS+ Peers MUST support AUDIT of these
+   operations, and TACACS+ Clients MUST support accounting to log
+   authentication attempts and commands for auditing and compliance.
+
+   Configuration for this feature on the SSHServer/TACACS+Client MUST
+   include a setting for the maximum lifetime of stored public keys,
+   which MUST default to 5 minutes.
+
+5.  Operational Considerations
+
+   Policy Configuration: Operators MUST configure policies on the SSH
+   server (TACACS+ client) to determine whether public keys are
+   retrieved from the TACACS+ server or from a local store.  This
+   includes setting fallback behavior if the TACACS+ server is
+   unreachable.
+
+   Platform and Server Compatibility: Operators MUST verify that the
+   TACACS+ server supports SSH public key attributes and that the
+   platform and software versions are compatible with this feature.
+
+   Verification of Server Reachability and Key Availability: Operators
+   SHOULD ensure that the device can reach an operational TACACS+ server
+   and that user accounts on the TACACS+ server include SSH public key
+   attributes in supported formats.
+
+   AAA Method List Setup: Operators SHOULD configure the AAA method list
+   to use TACACS+ as the primary authentication method for SSH, with
+   optional local fallback.  This controls whether local keys are used
+   when TACACS+ is unavailable.
+
+
+
+
+Dahm, et al.              Expires 2 April 2027                  [Page 7]
+
+Internet-Draft           TACACS+ SSH Public Keys          September 2026
+
+
+   Secure Communication: TACACS+ protocol exchanges are encrypted to
+   ensure confidentiality.  It is RECOMMENDED to use TACACS+ over TLS
+   1.3 to protect against downgrade attacks and provide modern
+   cryptographic security.
+
+   Public SSH Keys downloaded using this mechanism MUST NOT be stored
+   permanently.
+
+6.  IANA Considerations
+
+   TBD
+
+7.  References
+
+7.1.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/info/rfc2119>.
+
+   [RFC4716]  Galbraith, J. and R. Thayer, "The Secure Shell (SSH)
+              Public Key File Format", RFC 4716, DOI 10.17487/RFC4716,
+              November 2006, <https://www.rfc-editor.org/info/rfc4716>.
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/info/rfc8174>.
+
+   [RFC8907]  Dahm, T., Ota, A., Medway Gash, D.C., Carrel, D., and L.
+              Grant, "The Terminal Access Controller Access-Control
+              System Plus (TACACS+) Protocol", RFC 8907,
+              DOI 10.17487/RFC8907, September 2020,
+              <https://www.rfc-editor.org/info/rfc8907>.
+
+   [RFC9887]  Dahm, T., Heasley, J., Medway Gash, D.C., and A. Ota,
+              "Terminal Access Controller Access-Control System Plus
+              (TACACS+) over TLS 1.3", RFC 9887, DOI 10.17487/RFC9887,
+              December 2025, <https://www.rfc-editor.org/info/rfc9887>.
+
+7.2.  Informative References
+
+   [RFC4251]  Ylonen, T. and C. Lonvick, Ed., "The Secure Shell (SSH)
+              Protocol Architecture", RFC 4251, DOI 10.17487/RFC4251,
+              January 2006, <https://www.rfc-editor.org/info/rfc4251>.
+
+
+
+
+
+
+Dahm, et al.              Expires 2 April 2027                  [Page 8]
+
+Internet-Draft           TACACS+ SSH Public Keys          September 2026
+
+
+Appendix A.  Appendix 1 [REPLACE/DELETE]
+
+   This becomes an Appendix [REPLACE]
+
+Acknowledgements
+
+   The author(s) would like to thank Nils Warnke, Arnaud Elbard, Micheal
+   Richardson, Marc Huber and... for their support, insightful reviews,
+   suggestions and comments, all of whose contributions improved the
+   document considerably..
+
+Contributors
+
+   Thanks to all of the contributors.  [REPLACE]
+
+Authors' Addresses
+
+   Thorsten Dahm
+   Email: thorsten.dahm@gmail.com
+
+
+   John Heasley
+   NTT
+   Email: heas@shrubbery.net
+
+
+   Douglas C. Medway Gash
+   Cisco Systems, Inc.
+   170 West Tasman Dr.
+   San Jose, CA 95134
+   United States of America
+   Email: dcmgash@cisco.com
+
+
+   Andrej Ota
+   Email: andrej@ota.si
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Dahm, et al.              Expires 2 April 2027                  [Page 9]
