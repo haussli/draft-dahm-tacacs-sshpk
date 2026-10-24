@@ -12,7 +12,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
   category="std"
   consensus="true"
-  docName="draft-dahm-opsawg-tacacs-sshpk-01"
+  docName="draft-dahm-opsawg-tacacs-sshpk-00"
   ipr="trust200902"
   obsoletes=""
   updates="RFC8907"
@@ -20,7 +20,7 @@
   sortRefs="true"
   indexInclude="false"
   xml:lang="en"
-  version="1">
+  version="3">
 
   <front>
     <title abbrev="TACACS+ SSH Public Keys">SSH Public Key Distribution for Device Administration using Terminal Access Controller Access-Control System Plus (TACACS+)</title>
