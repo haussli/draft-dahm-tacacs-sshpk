@@ -6,10 +6,10 @@ Operations and Management Area Working Group                     T. Dahm
 Internet-Draft                                                          
 Updates: RFC8907 (if approved)                                J. Heasley
 Intended status: Standards Track                                     NTT
-Expires: 2 April 2027                                  D. C. Medway Gash
+Expires: 27 April 2027                                 D. C. Medway Gash
                                                      Cisco Systems, Inc.
                                                                   A. Ota
-                                                       29 September 2026
+                                                         24 October 2026
 
 
   SSH Public Key Distribution for Device Administration using Terminal
@@ -41,7 +41,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 2 April 2027.
+   This Internet-Draft will expire on 27 April 2027.
 
 Copyright Notice
 
@@ -53,9 +53,9 @@ Copyright Notice
 
 
 
-Dahm, et al.              Expires 2 April 2027                  [Page 1]
+Dahm, et al.              Expires 27 April 2027                 [Page 1]
 
-Internet-Draft           TACACS+ SSH Public Keys          September 2026
+Internet-Draft           TACACS+ SSH Public Keys            October 2026
 
 
    This document is subject to BCP 78 and the IETF Trust's Legal
@@ -86,7 +86,6 @@ Table of Contents
    7.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   8
      7.1.  Normative References  . . . . . . . . . . . . . . . . . .   8
      7.2.  Informative References  . . . . . . . . . . . . . . . . .   8
-   Appendix A.  Appendix 1 [REPLACE/DELETE]  . . . . . . . . . . . .   9
    Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .   9
    Contributors  . . . . . . . . . . . . . . . . . . . . . . . . . .   9
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   9
@@ -106,15 +105,15 @@ Table of Contents
    This document describes an enhancement of the secured version of the
    TACACS+ protocol [RFC9887] to facilitate the download of the
    applicable public keys from a central TACACS+ server so that the
-
-
-
-Dahm, et al.              Expires 2 April 2027                  [Page 2]
-
-Internet-Draft           TACACS+ SSH Public Keys          September 2026
-
-
    TACACS+ Client can use it to complete SSH authentication.  The intent
+
+
+
+Dahm, et al.              Expires 27 April 2027                 [Page 2]
+
+Internet-Draft           TACACS+ SSH Public Keys            October 2026
+
+
    is to shift the burden of distribution of SSH public keys from the
    network devices to the central TACACS+ server.  Note that this model
    does NOT extend the SSH authentication flow out from the SSH server
@@ -162,15 +161,15 @@ Internet-Draft           TACACS+ SSH Public Keys          September 2026
    SSHServer/TACACS+Client.  This document describes a mechanism to
    retrieve the public keys from a TACACS+ server.  The SSHServer/
    TACACS+Client MUST allow the operator to configure a policy to
-
-
-
-Dahm, et al.              Expires 2 April 2027                  [Page 3]
-
-Internet-Draft           TACACS+ SSH Public Keys          September 2026
-
-
    determine whether the public keys are retrieved from the TACACS+
+
+
+
+Dahm, et al.              Expires 27 April 2027                 [Page 3]
+
+Internet-Draft           TACACS+ SSH Public Keys            October 2026
+
+
    server or from a local store.  When the public keys are retrieved
    from TACACS+, but the TACACS+ server is unreachable (see Section 4.4
    of [RFC8907]) the SSHServer/TACACS+Client MUST provide a fallback
@@ -221,9 +220,10 @@ Internet-Draft           TACACS+ SSH Public Keys          September 2026
 
 
 
-Dahm, et al.              Expires 2 April 2027                  [Page 4]
+
+Dahm, et al.              Expires 27 April 2027                 [Page 4]
 
-Internet-Draft           TACACS+ SSH Public Keys          September 2026
+Internet-Draft           TACACS+ SSH Public Keys            October 2026
 
 
    *  action = TAC_PLUS_AUTHEN_SEND_PUBLIC_KEYS
@@ -277,9 +277,9 @@ Internet-Draft           TACACS+ SSH Public Keys          September 2026
 
 
 
-Dahm, et al.              Expires 2 April 2027                  [Page 5]
+Dahm, et al.              Expires 27 April 2027                 [Page 5]
 
-Internet-Draft           TACACS+ SSH Public Keys          September 2026
+Internet-Draft           TACACS+ SSH Public Keys            October 2026
 
 
    If authentication is not successful and the status is
@@ -333,9 +333,9 @@ Internet-Draft           TACACS+ SSH Public Keys          September 2026
 
 
 
-Dahm, et al.              Expires 2 April 2027                  [Page 6]
+Dahm, et al.              Expires 27 April 2027                 [Page 6]
 
-Internet-Draft           TACACS+ SSH Public Keys          September 2026
+Internet-Draft           TACACS+ SSH Public Keys            October 2026
 
 
 4.  Security Considerations
@@ -344,19 +344,20 @@ Internet-Draft           TACACS+ SSH Public Keys          September 2026
    TACACS+ servers MUST reject packets with this version if they do not
    support this feature.
 
-   Fallback Mechanism: The SSH server MUST allow configuration of a
-   policy to determine whether to retrieve keys from the TACACS+ server
-   or a local store.  If the TACACS+ server is unreachable, a fallback
-   to local keys is necessary to maintain access.  However, if the
-   TACACS+ server is reachable but returns no keys, authentication MUST
-   be rejected regardless of local keys to prevent unauthorized access.
+   Fallback Mechanism: The SSHServer/TACACS+Client MUST allow
+   configuration of a policy to determine whether to retrieve keys from
+   the TACACS+ server or a local store.  If the TACACS+ server is
+   unreachable, a fallback to local keys is necessary to maintain
+   access.  However, if the TACACS+ server is reachable but returns no
+   keys, authentication MUST be rejected regardless of local keys to
+   prevent unauthorized access.
 
    Strict Authentication Policy Enforcement: If the TACACS+ server
    explicitly denies the request, authentication MUST fail immediately
    without fallback to local keys, ensuring centralized policy
    enforcement.
 
-   Audit and Logging: TACACS+ Peers MUST support AUDIT of these
+   Audit and Logging: TACACS+ Peers MUST support audit of these
    operations, and TACACS+ Clients MUST support accounting to log
    authentication attempts and commands for auditing and compliance.
 
@@ -366,32 +367,31 @@ Internet-Draft           TACACS+ SSH Public Keys          September 2026
 
 5.  Operational Considerations
 
-   Policy Configuration: Operators MUST configure policies on the SSH
-   server (TACACS+ client) to determine whether public keys are
-   retrieved from the TACACS+ server or from a local store.  This
-   includes setting fallback behavior if the TACACS+ server is
-   unreachable.
+   Policy Configuration: Operators MUST configure policies on the
+   SSHServer/TACACS+Client to determine whether public keys are
+   retrieved from the TACACS+ server or from a local store.  Operators
+   SHOULD configure a AAA method list to use TACACS+ as the primary
+   authentication method for SSH, with optional local fallback.  This
+   controls whether local keys are used when TACACS+ is unavailable.
 
    Platform and Server Compatibility: Operators MUST verify that the
    TACACS+ server supports SSH public key attributes and that the
    platform and software versions are compatible with this feature.
 
    Verification of Server Reachability and Key Availability: Operators
-   SHOULD ensure that the device can reach an operational TACACS+ server
-   and that user accounts on the TACACS+ server include SSH public key
-   attributes in supported formats.
-
-   AAA Method List Setup: Operators SHOULD configure the AAA method list
-   to use TACACS+ as the primary authentication method for SSH, with
-   optional local fallback.  This controls whether local keys are used
-   when TACACS+ is unavailable.
+   SHOULD ensure that the SSHServer/TACACS+Client can reach an
+   operational TACACS+ server and the TACACS+ server can include user
+   SSH public key attributes in supported formats.
 
 
 
 
-Dahm, et al.              Expires 2 April 2027                  [Page 7]
+
+
+
+Dahm, et al.              Expires 27 April 2027                 [Page 7]
 
-Internet-Draft           TACACS+ SSH Public Keys          September 2026
+Internet-Draft           TACACS+ SSH Public Keys            October 2026
 
 
    Secure Communication: TACACS+ protocol exchanges are encrypted to
@@ -445,21 +445,17 @@ Internet-Draft           TACACS+ SSH Public Keys          September 2026
 
 
 
-Dahm, et al.              Expires 2 April 2027                  [Page 8]
+Dahm, et al.              Expires 27 April 2027                 [Page 8]
 
-Internet-Draft           TACACS+ SSH Public Keys          September 2026
+Internet-Draft           TACACS+ SSH Public Keys            October 2026
 
-
-Appendix A.  Appendix 1 [REPLACE/DELETE]
-
-   This becomes an Appendix [REPLACE]
 
 Acknowledgements
 
    The author(s) would like to thank Nils Warnke, Arnaud Elbard, Micheal
    Richardson, Marc Huber and... for their support, insightful reviews,
    suggestions and comments, all of whose contributions improved the
-   document considerably..
+   document considerably.
 
 Contributors
 
@@ -501,4 +497,8 @@ Authors' Addresses
 
 
 
-Dahm, et al.              Expires 2 April 2027                  [Page 9]
+
+
+
+
+Dahm, et al.              Expires 27 April 2027                 [Page 9]
